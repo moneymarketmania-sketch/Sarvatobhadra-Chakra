@@ -22,7 +22,7 @@ st.caption("Classical SBC analysis — complete 9×9 grid with all 5 Panchaka la
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# COMPLETE 9×9 SBC GRID RENDERER
+# COMPLETE 9×9 SBC GRID RENDERER (FIXED)
 # ─────────────────────────────────────────────────────────────────────────────
 def build_sbc_grid_html(
     stock_nak: str,
@@ -33,6 +33,7 @@ def build_sbc_grid_html(
     tithi: int,
     paksha: str,
     vara_today: str,
+    planetary_transits: dict = None,  # NEW: Pass current transits mapping Nakshatras -> Planet List
 ) -> str:
     """
     Renders the full classical 9×9 Sarvatobhadra Chakra grid with:
@@ -45,6 +46,8 @@ def build_sbc_grid_html(
                 Moon nak (moon badge), Today's Tithi group (gold glow),
                 Today's Vara (highlighted).
     """
+    if planetary_transits is None:
+        planetary_transits = {}
 
     def _nak_idx(name: str) -> int:
         try:
@@ -58,8 +61,6 @@ def build_sbc_grid_html(
     r = _nak_idx(right_nak)
     m = _nak_idx(moon_nak)
 
-    # Normalize nak names used in grid cells to indices for matching
-    # SBC_GRID_CELLS uses full names for nakshatras
     def _cell_nak_idx(cell_name: str) -> int:
         return _nak_idx(cell_name)
 
@@ -77,17 +78,17 @@ def build_sbc_grid_html(
             active_tithi_cell = label
             break
 
-    # Map today's weekday to vara label
-    vara_label_map = {
-        "Sunday": "☉ Sun",
-        "Monday": "☽ Mon",
-        "Tuesday": "♂ Tue",
-        "Wednesday": "☿ Wed",
-        "Thursday": "♃ Thu",
-        "Friday": "♀ Fri",
-        "Saturday": "♄ Sat",
+    # Standard clean labels for internal rings (No default planet icons)
+    clean_vara_labels = {
+        "Sunday": "Sun Vara",
+        "Monday": "Mon Vara",
+        "Tuesday": "Tue Vara",
+        "Wednesday": "Wed Vara",
+        "Thursday": "Thu Vara",
+        "Friday": "Fri Vara",
+        "Saturday": "Sat Vara",
     }
-    active_vara_cell = vara_label_map.get(vara_today, "")
+    active_vara_cell = clean_vara_labels.get(vara_today, "")
 
     cells_html = []
     CELL = 62  # px per cell
@@ -96,7 +97,6 @@ def build_sbc_grid_html(
         for col in range(9):
             cell = SBC_GRID_CELLS.get((row, col))
             if cell is None:
-                # Empty interior cell (shouldn't happen with complete grid)
                 cells_html.append(
                     f'<div style="width:{CELL}px;height:{CELL}px;'
                     f'background:#f0f0f0;border:1px solid #e0e0e0;border-radius:3px;"></div>'
@@ -104,6 +104,16 @@ def build_sbc_grid_html(
                 continue
 
             layer, text = cell
+            
+            # Clean up the display text if it's pointing to the raw static inner cells
+            display_text = text
+            if layer == "vara":
+                # Convert the raw dictionary lookup string (e.g., "☉ Sun") to a clean label
+                raw_to_clean = {
+                    "☉ Sun": "Sun Vara", "☽ Mon": "Mon Vara", "♂ Tue": "Tue Vara",
+                    "☿ Wed": "Wed Vara", "♃ Thu": "Thu Vara", "♀ Fri": "Fri Vara", "♄ Sat": "Sat Vara"
+                }
+                display_text = raw_to_clean.get(text, text)
 
             base_style = (
                 f"width:{CELL}px;height:{CELL}px;"
@@ -114,9 +124,18 @@ def build_sbc_grid_html(
             )
 
             moon_badge = ""
+            planet_badges = ""
 
             if layer == "nak":
                 ni = _cell_nak_idx(text)
+                
+                # Check if any actual ephemeris transits are sitting in this specific Nakshatra
+                # Matches against your data frame rows (e.g. text="Rohini", text="Swati")
+                if text in planetary_transits:
+                    planets_here = planetary_transits[text]  # List of planet strings/icons
+                    if planets_here:
+                        planet_badges = f'<div style="background:#4B5563;color:#fff;padding:1px 3px;border-radius:3px;font-size:7px;margin-top:2px;font-weight:bold;">{" ".join(planets_here)}</div>'
+
                 if ni == s:
                     style = (
                         base_style
@@ -142,13 +161,16 @@ def build_sbc_grid_html(
                         base_style
                         + "background:#fafafa;border:1px solid #ddd;color:#444;"
                     )
+                
                 if ni == m and m != -1:
                     moon_badge = '<div style="position:absolute;top:2px;right:3px;font-size:9px;">🌕</div>'
+                
                 display_name = NAK_SHORT.get(ni, text[:8])
                 cells_html.append(
                     f'<div style="{style}">'
                     f'<span style="font-size:7px;color:#888;font-weight:400;">#{ni+1 if ni < 27 else "Ab"}</span>'
                     f'<span style="font-size:8px;font-weight:600;">{display_name}</span>'
+                    f"{planet_badges}"
                     f"{moon_badge}</div>"
                 )
 
@@ -157,38 +179,39 @@ def build_sbc_grid_html(
                     base_style
                     + "background:#F0E6FF;border:2px solid #9B7FD4;color:#5B2D8E;font-weight:700;font-size:10px;"
                 )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "vowel":
                 style = (
                     base_style
                     + "background:#FFF8E7;border:1px solid #DDB850;color:#7A5C00;font-size:9px;"
                 )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "rashi":
                 style = (
                     base_style
                     + "background:#E8F4FD;border:1px solid #7AB8E8;color:#1A4F7A;font-size:8px;font-weight:600;"
                 )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "tithi":
-                is_active = text == active_tithi_cell
+                is_active = display_text == active_tithi_cell
                 if is_active:
                     style = (
                         base_style
                         + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
                     )
-                else:
+                else = (
                     style = (
                         base_style
                         + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
                     )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                )
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "vara":
-                is_active = text == active_vara_cell
+                is_active = display_text == active_vara_cell
                 if is_active:
                     style = (
                         base_style
@@ -199,20 +222,20 @@ def build_sbc_grid_html(
                         base_style
                         + "background:#F0FDF4;border:1px solid #6EE7B7;color:#065F46;font-size:9px;"
                     )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "center":
                 style = base_style + (
                     "background:linear-gradient(135deg,#FAECE7,#FDE8D8);"
                     "border:2px solid #C87941;color:#7C2D12;font-weight:700;font-size:9px;"
                 )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             else:
                 style = (
                     base_style + "background:#f5f5f5;color:#777;border:1px solid #ddd;"
                 )
-                cells_html.append(f'<div style="{style}">{text}</div>')
+                cells_html.append(f'<div style="{style}">{display_text}</div>')
 
     legend = f"""
     <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;font-size:11px;">
@@ -226,7 +249,6 @@ def build_sbc_grid_html(
     </div>
     """
 
-    grid_w = 9 * CELL + 8 * 2 + 8  # cells + gaps + padding
     return f"""
     <div style="padding:16px;background:#f7f7f7;border:1px solid #ccc;
                 border-radius:10px;text-align:center;font-family:'Segoe UI',sans-serif;">
