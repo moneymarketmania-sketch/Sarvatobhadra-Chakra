@@ -9,6 +9,7 @@ st.set_page_config(page_title="SBC Analyser", page_icon="🔵", layout="wide")
 st.title("🔵 Sarvatobhadra Chakra Analyser")
 st.caption("Classical SBC analysis for stocks and indices")
 
+
 def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
     """Phase 1 - Full classical 9×9 SBC grid with all layers"""
     from sbc_engine import NAKSHATRAS, SBC_GRID_CELLS, NAK_SHORT
@@ -35,20 +36,36 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                 nak_i = nak_idx(text)
                 style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;position:relative;font-weight:600;"
                 if nak_i == s:
-                    style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
+                    style += (
+                        "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
+                    )
                 elif nak_i == f:
-                    style += "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
+                    style += (
+                        "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
+                    )
                 elif nak_i == l:
-                    style += "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
+                    style += (
+                        "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
+                    )
                 elif nak_i == r:
-                    style += "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
+                    style += (
+                        "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
+                    )
                 else:
                     style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
-                moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
-                grid_cells.append(f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>')
+                moon_badge = (
+                    '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
+                    if nak_i == m and m != -1
+                    else ""
+                )
+                grid_cells.append(
+                    f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>'
+                )
             else:
                 # Inner layers
-                grid_cells.append(f'<div style="background:#f0f0f0;color:#777;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">{text}</div>')
+                grid_cells.append(
+                    f'<div style="background:#f0f0f0;color:#777;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">{text}</div>'
+                )
 
     return f"""
     <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
@@ -63,6 +80,23 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
         <div style="text-align:center;margin-top:10px;font-size:11px;color:#666">SOUTH</div>
     </div>
     """
+
+
+# ── Inputs ──────────────────────────────────────────────────
+col1, col2 = st.columns(2)
+
+with col1:
+    symbol = st.text_input(...)
+    sector = st.text_input(...)
+
+with col2:
+    use_now = st.checkbox(...)
+    ...
+
+ephe_path = ...
+
+analyse = st.button("🔍 Run SBC Analysis", type="primary")
+
 # ── Run ─────────────────────────────────────────────────────
 if analyse and symbol:
     with st.spinner("Computing planetary positions and SBC..."):
