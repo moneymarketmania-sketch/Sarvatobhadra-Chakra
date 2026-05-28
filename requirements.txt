@@ -11,3 +11,8 @@ pyswisseph>=2.10.3.1
 # Everything else used by sbc_engine.py is standard library:
 #   hashlib, math, dataclasses, datetime, typing  — no install needed
 # ─────────────────────────────────────────────────────────────
+
+streamlit
+pyswisseph
+yfinance
+pandas
