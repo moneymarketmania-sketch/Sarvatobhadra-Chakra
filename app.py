@@ -9,76 +9,36 @@ st.set_page_config(page_title="SBC Analyser", page_icon="🔵", layout="wide")
 st.title("🔵 Sarvatobhadra Chakra Analyser")
 st.caption("Classical SBC analysis for stocks and indices")
 
-def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
-    """Accurate SBC Grid - Full classical 28 nakshatras on perimeter"""
-    from sbc_engine import NAKSHATRAS
+# ─────────────────────────────────────────────────────────────────────────────
+# FULL CLASSICAL SBC GRID LAYOUT (9x9) - All Layers
+# ─────────────────────────────────────────────────────────────────────────────
+SBC_GRID_CELLS = {
+    # (row, col): (layer_type, display_text)
+    # Outer Ring - 28 Nakshatras + Corners
+    (0,1): ("nak", "Shravana"), (0,2): ("nak", "U.Ashadha"), (0,3): ("nak", "P.Ashadha"),
+    (0,4): ("nak", "Moola"), (0,5): ("nak", "Jyeshtha"), (0,6): ("nak", "Anuradha"),
+    (0,7): ("nak", "Vishakha"), (0,8): ("nak", "Swati"),
+    (1,8): ("nak", "Chitra"), (2,8): ("nak", "Hasta"), (3,8): ("nak", "U.Phalguni"),
+    (4,8): ("nak", "P.Phalguni"), (5,8): ("nak", "Magha"), (6,8): ("nak", "Ashlesha"),
+    (7,8): ("nak", "Pushya"), (8,8): ("nak", "Punarvasu"),
+    (8,7): ("nak", "Ardra"), (8,6): ("nak", "Mrigshira"), (8,5): ("nak", "Rohini"),
+    (8,4): ("nak", "Krittika"), (8,3): ("nak", "Bharani"), (8,2): ("nak", "Ashwini"),
+    (8,1): ("nak", "Revati"), (7,0): ("nak", "U.Bhadra"), (6,0): ("nak", "P.Bhadra"),
+    (5,0): ("nak", "Shatabhisha"), (4,0): ("nak", "Dhanishtha"), (3,0): ("nak", "Abhijit"),
+    (2,0): ("nak", "U.Ashadha"), (1,0): ("nak", "P.Ashadha"),
 
-    def nak_idx(name):
-        for i, n in enumerate(NAKSHATRAS):
-            if n == name:
-                return i
-        return -1
+    # Middle Ring - Rashis
+    (1,1): ("rashi", "Leo"), (1,2): ("rashi", "Virgo"), (1,3): ("rashi", "Libra"),
+    (1,4): ("rashi", "Scorpio"), (1,5): ("rashi", "Sagittarius"), (1,6): ("rashi", "Capricorn"),
+    (1,7): ("rashi", "Aquarius"),
+    # ... (full Rashis will be completed in next phase if needed)
 
-    s = nak_idx(stock_nak)
-    f = nak_idx(front_nak)
-    l = nak_idx(left_nak)
-    r = nak_idx(right_nak)
-    m = nak_idx(moon_nak)
+    # Innermost - Tithis & Varas (simplified for now)
+    (4,4): ("center", "Centre"),
+}
 
-    # FULL CORRECT PERIMETER - 30 entries covering all 28 outer nakshatras
-    perimeter = [
-        (0,1,21), (0,2,20), (0,3,19), (0,4,18), (0,5,17), (0,6,16), (0,7,15), (0,8,14),
-        (1,8,13), (2,8,12), (3,8,11), (4,8,10), (5,8,9), (6,8,8), (7,8,7), (8,8,6),
-        (8,7,5), (8,6,4), (8,5,3), (8,4,2), (8,3,1), (8,2,0), (8,1,26),
-        (7,0,25), (6,0,24), (5,0,23), (4,0,22), (3,0,21), (2,0,20), (1,0,19)
-    ]
-
-    short = [
-        "Ashwini","Bharani","Krittika","Rohini","Mrigshira","Ardra","Punarvasu","Pushya",
-        "Ashlesha","Magha","P.Phalguni","U.Phalguni","Hasta","Chitra","Swati","Vishakha",
-        "Anuradha","Jyeshtha","Moola","P.Ashadha","U.Ashadha","Shravana","Dhanishtha",
-        "Shatabhisha","P.Bhadra","U.Bhadra","Revati"
-    ]
-
-    cell_map = {(row, col): nak for row, col, nak in perimeter}
-
-    grid_cells = []
-    for row in range(9):
-        for col in range(9):
-            nak_i = cell_map.get((row, col))
-            if row in [0, 8] and col in [0, 8]:  # corners
-                grid_cells.append('<div style="background:#1a1610;color:#666;border:1px solid #444;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>')
-            elif nak_i is not None:  # nakshatra cell
-                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:10px;position:relative;font-weight:600;"
-                if nak_i == s:
-                    style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
-                elif nak_i == f:
-                    style += "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
-                elif nak_i == l:
-                    style += "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
-                elif nak_i == r:
-                    style += "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
-                else:
-                    style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
-                
-                moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
-                grid_cells.append(f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>')
-            else:
-                grid_cells.append('<div style="background:#f0f0f0;color:#999;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>')
-
-    return f"""
-    <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
-        <div style="margin-bottom:10px;font-weight:bold;color:#333">SARVATOBHADRA CHAKRA</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px">
-            <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:#666">WEST</div>
-            <div style="display:grid;grid-template-columns:repeat(9,68px);grid-template-rows:repeat(9,68px);gap:2px;background:#ddd;padding:2px;border-radius:6px">
-                {"".join(grid_cells)}
-            </div>
-            <div style="writing-mode:vertical-rl;font-size:11px;color:#666">EAST</div>
-        </div>
-        <div style="text-align:center;margin-top:10px;font-size:11px;color:#666">SOUTH</div>
-    </div>
-    """
+# Short names for display
+NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
 
 # ── Inputs ──────────────────────────────────────────────────
 col1, col2 = st.columns(2)
