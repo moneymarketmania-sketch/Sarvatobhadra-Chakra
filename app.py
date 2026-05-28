@@ -104,14 +104,19 @@ def build_sbc_grid_html(
                 continue
 
             layer, text = cell
-            
+
             # Clean up the display text if it's pointing to the raw static inner cells
             display_text = text
             if layer == "vara":
                 # Convert the raw dictionary lookup string (e.g., "☉ Sun") to a clean label
                 raw_to_clean = {
-                    "☉ Sun": "Sun Vara", "☽ Mon": "Mon Vara", "♂ Tue": "Tue Vara",
-                    "☿ Wed": "Wed Vara", "♃ Thu": "Thu Vara", "♀ Fri": "Fri Vara", "♄ Sat": "Sat Vara"
+                    "☉ Sun": "Sun Vara",
+                    "☽ Mon": "Mon Vara",
+                    "♂ Tue": "Tue Vara",
+                    "☿ Wed": "Wed Vara",
+                    "♃ Thu": "Thu Vara",
+                    "♀ Fri": "Fri Vara",
+                    "♄ Sat": "Sat Vara",
                 }
                 display_text = raw_to_clean.get(text, text)
 
@@ -128,11 +133,13 @@ def build_sbc_grid_html(
 
             if layer == "nak":
                 ni = _cell_nak_idx(text)
-                
+
                 # Check if any actual ephemeris transits are sitting in this specific Nakshatra
                 # Matches against your data frame rows (e.g. text="Rohini", text="Swati")
                 if text in planetary_transits:
-                    planets_here = planetary_transits[text]  # List of planet strings/icons
+                    planets_here = planetary_transits[
+                        text
+                    ]  # List of planet strings/icons
                     if planets_here:
                         planet_badges = f'<div style="background:#4B5563;color:#fff;padding:1px 3px;border-radius:3px;font-size:7px;margin-top:2px;font-weight:bold;">{" ".join(planets_here)}</div>'
 
@@ -161,10 +168,10 @@ def build_sbc_grid_html(
                         base_style
                         + "background:#fafafa;border:1px solid #ddd;color:#444;"
                     )
-                
+
                 if ni == m and m != -1:
                     moon_badge = '<div style="position:absolute;top:2px;right:3px;font-size:9px;">🌕</div>'
-                
+
                 display_name = NAK_SHORT.get(ni, text[:8])
                 cells_html.append(
                     f'<div style="{style}">'
@@ -202,12 +209,11 @@ def build_sbc_grid_html(
                         base_style
                         + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
                     )
-                else = (
+                else:
                     style = (
                         base_style
                         + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
                     )
-                )
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "vara":
@@ -408,17 +414,26 @@ if analyse_btn and symbol:
                 for pr in result.planet_results:
                     nak_name = pr.planet_nak
                     p_label = pr.planet
-                    
+
                     # Convert raw names to standard Vedic glyph formats for the perimeter view
-                    if p_label == "Sun": p_label = "☉ Sun"
-                    elif p_label == "Moon": p_label = "☽ Mon"
-                    elif p_label == "Mars": p_label = "♂ Tue"
-                    elif p_label == "Mercury": p_label = "☿ Wed"
-                    elif p_label == "Jupiter": p_label = "♃ Thu"
-                    elif p_label == "Venus": p_label = "♀ Fri"
-                    elif p_label == "Saturn": p_label = "♄ Sat"
-                    elif p_label == "Rahu": p_label = "Rahu"
-                    elif p_label == "Ketu": p_label = "Ketu"
+                    if p_label == "Sun":
+                        p_label = "☉ Sun"
+                    elif p_label == "Moon":
+                        p_label = "☽ Mon"
+                    elif p_label == "Mars":
+                        p_label = "♂ Tue"
+                    elif p_label == "Mercury":
+                        p_label = "☿ Wed"
+                    elif p_label == "Jupiter":
+                        p_label = "♃ Thu"
+                    elif p_label == "Venus":
+                        p_label = "♀ Fri"
+                    elif p_label == "Saturn":
+                        p_label = "♄ Sat"
+                    elif p_label == "Rahu":
+                        p_label = "Rahu"
+                    elif p_label == "Ketu":
+                        p_label = "Ketu"
 
                     if nak_name not in transits_dict:
                         transits_dict[nak_name] = []
@@ -435,7 +450,7 @@ if analyse_btn and symbol:
                     tithi=result.tithi,
                     paksha=result.paksha,
                     vara_today=vara_today,
-                    planetary_transits=transits_dict  # Safely passes the cleaned layout data
+                    planetary_transits=transits_dict,  # Safely passes the cleaned layout data
                 ),
                 height=760,
                 scrolling=False,
