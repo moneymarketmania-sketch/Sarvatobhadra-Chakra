@@ -383,6 +383,28 @@ if analyse_btn and symbol:
                     )
                 st.table(table_data)
 
+
+            # ── Commodity / Sector Relevance (Restored & Safeguarded) ─────────
+            st.subheader("🌾 Commodity / Sector Relevance")
+            
+            stock_commodities = getattr(result, "stock_commodities", [])
+            sector_matches = getattr(result, "sector_commodity_matches", [])
+            
+            if stock_commodities:
+                st.write(
+                    f"**Stock Nakshatra ({result.stock_nak}) naturally signifies:** "
+                    f"{', '.join(stock_commodities)}"
+                )
+            else:
+                st.write(f"_*No static commodity attributes found for {result.stock_nak}._")
+
+            if sector_matches:
+                st.success(
+                    f"🎯 **Sector correlation match confirmed:** {', '.join(sector_matches)}"
+                )
+            else:
+                st.info("No direct historical commodity correlations discovered for this specific sector configuration.")
+
             # ── Price Levels ──────────────────────────────────────────────────
             if hasattr(result, "price_levels") and result.price_levels:
                 st.subheader("🎯 SBC Algorithmic Support & Resistance Levels")
