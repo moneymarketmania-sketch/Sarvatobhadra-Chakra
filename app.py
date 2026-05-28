@@ -9,56 +9,60 @@ st.set_page_config(page_title="SBC Analyser", page_icon="🔵", layout="wide")
 st.title("🔵 Sarvatobhadra Chakra Analyser")
 st.caption("Classical SBC analysis for stocks and indices")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# FULL CLASSICAL SBC GRID LAYOUT (9x9) - All Layers
-# ─────────────────────────────────────────────────────────────────────────────
-SBC_GRID_CELLS = {
-    # (row, col): (layer_type, display_text)
-    # Outer Ring - 28 Nakshatras + Corners
-    (0,1): ("nak", "Shravana"), (0,2): ("nak", "U.Ashadha"), (0,3): ("nak", "P.Ashadha"),
-    (0,4): ("nak", "Moola"), (0,5): ("nak", "Jyeshtha"), (0,6): ("nak", "Anuradha"),
-    (0,7): ("nak", "Vishakha"), (0,8): ("nak", "Swati"),
-    (1,8): ("nak", "Chitra"), (2,8): ("nak", "Hasta"), (3,8): ("nak", "U.Phalguni"),
-    (4,8): ("nak", "P.Phalguni"), (5,8): ("nak", "Magha"), (6,8): ("nak", "Ashlesha"),
-    (7,8): ("nak", "Pushya"), (8,8): ("nak", "Punarvasu"),
-    (8,7): ("nak", "Ardra"), (8,6): ("nak", "Mrigshira"), (8,5): ("nak", "Rohini"),
-    (8,4): ("nak", "Krittika"), (8,3): ("nak", "Bharani"), (8,2): ("nak", "Ashwini"),
-    (8,1): ("nak", "Revati"), (7,0): ("nak", "U.Bhadra"), (6,0): ("nak", "P.Bhadra"),
-    (5,0): ("nak", "Shatabhisha"), (4,0): ("nak", "Dhanishtha"), (3,0): ("nak", "Abhijit"),
-    (2,0): ("nak", "U.Ashadha"), (1,0): ("nak", "P.Ashadha"),
+def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
+    """Phase 1 - Full classical 9×9 SBC grid with all layers"""
+    from sbc_engine import NAKSHATRAS, SBC_GRID_CELLS, NAK_SHORT
 
-    # Middle Ring - Rashis
-    (1,1): ("rashi", "Leo"), (1,2): ("rashi", "Virgo"), (1,3): ("rashi", "Libra"),
-    (1,4): ("rashi", "Scorpio"), (1,5): ("rashi", "Sagittarius"), (1,6): ("rashi", "Capricorn"),
-    (1,7): ("rashi", "Aquarius"),
-    # ... (full Rashis will be completed in next phase if needed)
+    def nak_idx(name):
+        for i, n in enumerate(NAKSHATRAS):
+            if n == name:
+                return i
+        return -1
 
-    # Innermost - Tithis & Varas (simplified for now)
-    (4,4): ("center", "Centre"),
-}
+    s = nak_idx(stock_nak)
+    f = nak_idx(front_nak)
+    l = nak_idx(left_nak)
+    r = nak_idx(right_nak)
+    m = nak_idx(moon_nak)
 
-# Short names for display
-NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
+    grid_cells = []
+    for row in range(9):
+        for col in range(9):
+            cell = SBC_GRID_CELLS.get((row, col), ("inner", "•"))
+            layer, text = cell
 
-# ── Inputs ──────────────────────────────────────────────────
-col1, col2 = st.columns(2)
+            if layer == "nak":
+                nak_i = nak_idx(text)
+                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;position:relative;font-weight:600;"
+                if nak_i == s:
+                    style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
+                elif nak_i == f:
+                    style += "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
+                elif nak_i == l:
+                    style += "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
+                elif nak_i == r:
+                    style += "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
+                else:
+                    style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
+                moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
+                grid_cells.append(f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>')
+            else:
+                # Inner layers
+                grid_cells.append(f'<div style="background:#f0f0f0;color:#777;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">{text}</div>')
 
-with col1:
-    symbol = st.text_input("Symbol (e.g. NIFTY, BANKNIFTY, RELIANCE)", value="NIFTY")
-    sector = st.text_input(
-        "Sector (e.g. Financial Services, Bank, IT, Pharma)", value="Financial Services"
-    )
-
-with col2:
-    use_now = st.checkbox("Use current date & time", value=True)
-    if not use_now:
-        date_input = st.date_input("Select Date")
-        time_input = st.time_input("Select Time (IST)")
-
-    ephe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ephe")
-
-analyse = st.button("🔍 Run SBC Analysis", type="primary")
-
+    return f"""
+    <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
+        <div style="margin-bottom:10px;font-weight:bold;color:#333;font-size:15px">SARVATOBHADRA CHAKRA</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+            <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:#666">WEST</div>
+            <div style="display:grid;grid-template-columns:repeat(9,68px);grid-template-rows:repeat(9,68px);gap:2px;background:#ddd;padding:2px;border-radius:6px">
+                {"".join(grid_cells)}
+            </div>
+            <div style="writing-mode:vertical-rl;font-size:11px;color:#666">EAST</div>
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:11px;color:#666">SOUTH</div>
+    </div>
+    """
 # ── Run ─────────────────────────────────────────────────────
 if analyse and symbol:
     with st.spinner("Computing planetary positions and SBC..."):
