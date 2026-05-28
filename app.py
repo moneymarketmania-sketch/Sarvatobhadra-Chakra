@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timezone
-from sbc_engine import analyse_symbol, print_report, SBCResult, NAKSHATRAS
+from sbc_engine import analyse_symbol, SBCResult
 import os
 import streamlit.components.v1 as components
 
@@ -11,8 +11,8 @@ st.caption("Classical SBC analysis for stocks and indices")
 
 
 def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
-    """Phase 1 - Full classical 9×9 SBC grid with all layers"""
-    from sbc_engine import NAKSHATRAS, SBC_GRID_CELLS, NAK_SHORT
+    """Accurate & simple classical 9×9 SBC grid"""
+    from sbc_engine import NAKSHATRAS
 
     def nak_idx(name):
         for i, n in enumerate(NAKSHATRAS):
@@ -26,15 +26,82 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
     r = nak_idx(right_nak)
     m = nak_idx(moon_nak)
 
+    # Full correct perimeter (28 unique nakshatras)
+    perimeter = [
+        (0, 1, 21),
+        (0, 2, 20),
+        (0, 3, 19),
+        (0, 4, 18),
+        (0, 5, 17),
+        (0, 6, 16),
+        (0, 7, 15),
+        (0, 8, 14),
+        (1, 8, 13),
+        (2, 8, 12),
+        (3, 8, 11),
+        (4, 8, 10),
+        (5, 8, 9),
+        (6, 8, 8),
+        (7, 8, 7),
+        (8, 8, 6),
+        (8, 7, 5),
+        (8, 6, 4),
+        (8, 5, 3),
+        (8, 4, 2),
+        (8, 3, 1),
+        (8, 2, 0),
+        (8, 1, 26),
+        (7, 0, 25),
+        (6, 0, 24),
+        (5, 0, 23),
+        (4, 0, 22),
+        (3, 0, 21),
+        (2, 0, 20),
+        (1, 0, 19),
+    ]
+
+    short = [
+        "Ashwini",
+        "Bharani",
+        "Krittika",
+        "Rohini",
+        "Mrigshira",
+        "Ardra",
+        "Punarvasu",
+        "Pushya",
+        "Ashlesha",
+        "Magha",
+        "P.Phalguni",
+        "U.Phalguni",
+        "Hasta",
+        "Chitra",
+        "Swati",
+        "Vishakha",
+        "Anuradha",
+        "Jyeshtha",
+        "Moola",
+        "P.Ashadha",
+        "U.Ashadha",
+        "Shravana",
+        "Dhanishtha",
+        "Shatabhisha",
+        "P.Bhadra",
+        "U.Bhadra",
+        "Revati",
+    ]
+
+    cell_map = {(row, col): nak for row, col, nak in perimeter}
+
     grid_cells = []
     for row in range(9):
         for col in range(9):
-            cell = SBC_GRID_CELLS.get((row, col), ("inner", "•"))
-            layer, text = cell
-
-            if layer == "nak":
-                nak_i = nak_idx(text)
-                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;position:relative;font-weight:600;"
+            nak_i = cell_map.get((row, col))
+            if row in [0, 8] and col in [0, 8]:  # corners
+                grid_cells.append(
+                    '<div style="background:#1a1610;color:#666;border:1px solid #444;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>'
+                )
+            elif nak_i is not None:  # nakshatra
+                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:10px;position:relative;font-weight:600;"
                 if nak_i == s:
                     style += (
                         "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
@@ -53,18 +120,18 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                     )
                 else:
                     style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
+
                 moon_badge = (
                     '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
                     if nak_i == m and m != -1
                     else ""
                 )
                 grid_cells.append(
-                    f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>'
+                    f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>'
                 )
             else:
-                # Inner layers
                 grid_cells.append(
-                    f'<div style="background:#f0f0f0;color:#777;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">{text}</div>'
+                    '<div style="background:#f0f0f0;color:#999;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>'
                 )
 
     return f"""
@@ -86,16 +153,21 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
 col1, col2 = st.columns(2)
 
 with col1:
-    symbol = st.text_input(...)
-    sector = st.text_input(...)
+    symbol = st.text_input("Symbol (e.g. NIFTY, BANKNIFTY, RELIANCE)", value="NIFTY")
+    sector = st.text_input(
+        "Sector (e.g. Financial Services, Bank, IT, Pharma)", value="Financial Services"
+    )
 
 with col2:
-    use_now = st.checkbox(...)
-    ...
+    use_now = st.checkbox("Use current date & time", value=True)
+    if not use_now:
+        date_input = st.date_input("Select Date")
+        time_input = st.time_input("Select Time (IST)")
 
-ephe_path = ...
+    ephe_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ephe")
 
 analyse = st.button("🔍 Run SBC Analysis", type="primary")
+
 
 # ── Run ─────────────────────────────────────────────────────
 if analyse and symbol:
@@ -106,7 +178,6 @@ if analyse and symbol:
             else:
                 from datetime import timedelta
 
-                # Convert IST to UTC (IST = UTC+5:30)
                 ist_naive = datetime.combine(date_input, time_input)
                 dt = ist_naive.replace(tzinfo=timezone.utc) - timedelta(
                     hours=5, minutes=30
@@ -119,7 +190,6 @@ if analyse and symbol:
                 dt=dt,
             )
 
-            # ── Score card ──────────────────────────────────
             st.markdown("---")
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("SBC Score", f"{result.sbc_score}/100")
@@ -127,7 +197,6 @@ if analyse and symbol:
             m3.metric("Stock Nakshatra", result.stock_nak)
             m4.metric("Tithi", f"{result.tithi} ({result.paksha})")
 
-            # ── Vedha directions ────────────────────────────
             st.subheader("Vedha Directions for " + result.stock_nak)
             d1, d2, d3 = st.columns(3)
             d1.info(f"**FRONT** → {result.vedha_front_nak}")
@@ -137,7 +206,6 @@ if analyse and symbol:
             if result.moon_malefic_paksha:
                 st.warning("⚠️ Moon is acting as MALEFIC (Krishna Paksha rule active)")
 
-            # ── Planet table ────────────────────────────────
             st.subheader("Planet-by-Planet Analysis")
             import pandas as pd
 
@@ -162,16 +230,12 @@ if analyse and symbol:
             df = pd.DataFrame(rows)
             st.dataframe(df, use_container_width=True)
 
-            # ── SBC Grid ────────────────────────────────────────────────
             st.subheader("Sarvatobhadra Chakra Grid")
-
-            # Build the grid HTML
             front_nak = result.vedha_front_nak
             left_nak = result.vedha_left_nak
             right_nak = result.vedha_right_nak
             stock_nak = result.stock_nak
 
-            # Get Moon nakshatra from planet results
             moon_result = next(
                 (r for r in result.planet_results if r.planet == "Moon"), None
             )
@@ -185,7 +249,6 @@ if analyse and symbol:
                 scrolling=False,
             )
 
-            # ── Commodity relevance ─────────────────────────
             st.subheader("Commodity / Sector Relevance")
             st.write(
                 f"**Stock Nakshatra ({result.stock_nak}) signifies:** {', '.join(result.stock_commodities)}"
@@ -199,6 +262,4 @@ if analyse and symbol:
 
         except Exception as e:
             st.error(f"Error: {e}")
-            st.info(
-                "Make sure the ephe/ folder is present in your repository with the .se1 files."
-            )
+            st.info("Make sure the ephe/ folder is present with the .se1 files.")
