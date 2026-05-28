@@ -688,6 +688,43 @@ def analyse_symbol(
         c for c in stock_commodities if c in ["Gold", "Silver", "Steel", "Copper"]
     ]
 
+    # ── FIX: DEFINE SBC LABEL AND MISSING VEDHA VARIABLES ──
+    # Determine the label based on the score
+    if sbc_score >= 70:
+        sbc_label = "Strong Bullish"
+    elif sbc_score <= 30:
+        sbc_label = "Strong Bearish"
+    else:
+        sbc_label = "Neutral / Consolidation"
+
+    # Define Vedha variables (Assuming you want to track the primary Nakshatra hit)
+    # If these are meant to be specific Nakshatra names, you must map them 
+    # from your ray-casting results or leave them as empty strings if not yet mapped.
+    v_front, v_left, v_right = "N/A", "N/A", "N/A"
+    
+    # Ensure moon_malefic_paksha is defined in the outer scope
+    # (It was defined inside the loop, so define it here for the return)
+    moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
+
+    # Now the return statement will function correctly
+    return SBCResult(
+        sbc_score=sbc_score,
+        sbc_label=sbc_label,
+        stock_nak=stock_nak,
+        tithi=tithi_raw,
+        paksha=paksha,
+        bullish_count=bullish_count,
+        bearish_count=bearish_count,
+        vedha_front_nak=v_front,
+        vedha_left_nak=v_left,
+        vedha_right_nak=v_right,
+        moon_malefic_paksha=moon_malefic_paksha,
+        planet_results=planet_results,
+        price_levels=price_levels,
+        stock_commodities=stock_commodities,
+        sector_commodity_matches=sector_matches,
+    )
+    
     return SBCResult(
         sbc_score=sbc_score,
         sbc_label=sbc_label,
