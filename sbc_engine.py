@@ -19,6 +19,12 @@ Rules encoded:
 =============================================================================
 """
 
+"""
+=============================================================================
+SARVATOBHADRA CHAKRA (SBC) — STANDALONE ANALYSIS ENGINE
+=============================================================================
+"""
+
 import hashlib
 import math
 from dataclasses import dataclass, field
@@ -26,76 +32,196 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 1.  NAKSHATRA MASTER LIST  (index 0–26, Abhijit treated separately)
+# 1.  NAKSHATRA MASTER LIST
 # ─────────────────────────────────────────────────────────────────────────────
 NAKSHATRAS = [
-    "Ashwini",  #  0
-    "Bharani",  #  1
-    "Krittika",  #  2
-    "Rohini",  #  3
-    "Mrigashira",  #  4
-    "Ardra",  #  5
-    "Punarvasu",  #  6
-    "Pushya",  #  7
-    "Ashlesha",  #  8
-    "Magha",  #  9
-    "Purva Phalguni",  # 10
-    "Uttara Phalguni",  # 11
-    "Hasta",  # 12
-    "Chitra",  # 13
-    "Swati",  # 14
-    "Vishakha",  # 15
-    "Anuradha",  # 16
-    "Jyeshtha",  # 17
-    "Moola",  # 18
-    "Purva Ashadha",  # 19
-    "Uttara Ashadha",  # 20
-    "Shravana",  # 21
-    "Dhanishtha",  # 22
-    "Shatabhisha",  # 23
-    "Purva Bhadrapada",  # 24
-    "Uttara Bhadrapada",  # 25
-    "Revati",  # 26
+    "Ashwini",
+    "Bharani",
+    "Krittika",
+    "Rohini",
+    "Mrigashira",
+    "Ardra",
+    "Punarvasu",
+    "Pushya",
+    "Ashlesha",
+    "Magha",
+    "Purva Phalguni",
+    "Uttara Phalguni",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Vishakha",
+    "Anuradha",
+    "Jyeshtha",
+    "Moola",
+    "Purva Ashadha",
+    "Uttara Ashadha",
+    "Shravana",
+    "Dhanishtha",
+    "Shatabhisha",
+    "Purva Bhadrapada",
+    "Uttara Bhadrapada",
+    "Revati",
 ]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CANONICAL ALIASES - MUST BE DEFINED BEFORE ANY CODE THAT USES nak_index
+# ─────────────────────────────────────────────────────────────────────────────
+_NAK_ALIASES = {
+    "ashwini": 0,
+    "aswini": 0,
+    "bharani": 1,
+    "bharni": 1,
+    "krittika": 2,
+    "kritika": 2,
+    "krit": 2,
+    "rohini": 3,
+    "roh": 3,
+    "mrigashira": 4,
+    "mrigshira": 4,
+    "mrigsira": 4,
+    "mrig": 4,
+    "ardra": 5,
+    "punarvasu": 6,
+    "puna": 6,
+    "pushya": 7,
+    "push": 7,
+    "ashlesha": 8,
+    "ashl": 8,
+    "magha": 9,
+    "magh": 9,
+    "purva phalguni": 10,
+    "p. phalguni": 10,
+    "p.phalguni": 10,
+    "uttara phalguni": 11,
+    "u. phalguni": 11,
+    "u.phalguni": 11,
+    "hasta": 12,
+    "hast": 12,
+    "chitra": 13,
+    "chit": 13,
+    "swati": 14,
+    "swat": 14,
+    "vishakha": 15,
+    "visaka": 15,
+    "vishaka": 15,
+    "vish": 15,
+    "anuradha": 16,
+    "anu": 16,
+    "jyeshtha": 17,
+    "jyestha": 17,
+    "jyes": 17,
+    "moola": 18,
+    "mool": 18,
+    "mula": 18,
+    "purva ashadha": 19,
+    "purva shada": 19,
+    "p. shada": 19,
+    "uttara ashadha": 20,
+    "uttra shada": 20,
+    "u. shada": 20,
+    "shravana": 21,
+    "shravan": 21,
+    "srav": 21,
+    "dhanishtha": 22,
+    "dhanistha": 22,
+    "dhan": 22,
+    "shatabhisha": 23,
+    "shatbhisha": 23,
+    "satabhisha": 23,
+    "shata": 23,
+    "purva bhadrapada": 24,
+    "purva bhadrapad": 24,
+    "p. bhadrapada": 24,
+    "uttara bhadrapada": 25,
+    "uttara bhadrapad": 25,
+    "u. bhadrapada": 25,
+    "revati": 26,
+    "reva": 26,
+    "abhijit": 20,
+    "abhijeet": 20,
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FULL CLASSICAL SBC 9×9 GRID LAYERS (Phase 1 - Complete)
+# ─────────────────────────────────────────────────────────────────────────────
+SBC_GRID_CELLS = {...}  # ← Keep the SBC_GRID_CELLS you already have here
+
+# Short names for nakshatras
+NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FULL CLASSICAL SBC 9×9 GRID LAYERS (Phase 1 - Complete & Clean)
 # ─────────────────────────────────────────────────────────────────────────────
 SBC_GRID_CELLS = {
     # Outer Ring - 28 Nakshatras
-    (0,1): ("nak", "Shravana"), (0,2): ("nak", "U.Ashadha"), (0,3): ("nak", "P.Ashadha"),
-    (0,4): ("nak", "Moola"), (0,5): ("nak", "Jyeshtha"), (0,6): ("nak", "Anuradha"),
-    (0,7): ("nak", "Vishakha"), (0,8): ("nak", "Swati"),
-    (1,8): ("nak", "Chitra"), (2,8): ("nak", "Hasta"), (3,8): ("nak", "U.Phalguni"),
-    (4,8): ("nak", "P.Phalguni"), (5,8): ("nak", "Magha"), (6,8): ("nak", "Ashlesha"),
-    (7,8): ("nak", "Pushya"), (8,8): ("nak", "Punarvasu"),
-    (8,7): ("nak", "Ardra"), (8,6): ("nak", "Mrigshira"), (8,5): ("nak", "Rohini"),
-    (8,4): ("nak", "Krittika"), (8,3): ("nak", "Bharani"), (8,2): ("nak", "Ashwini"),
-    (8,1): ("nak", "Revati"), (7,0): ("nak", "U.Bhadra"), (6,0): ("nak", "P.Bhadra"),
-    (5,0): ("nak", "Shatabhisha"), (4,0): ("nak", "Dhanishtha"), (3,0): ("nak", "Abhijit"),
-    (2,0): ("nak", "U.Ashadha"), (1,0): ("nak", "P.Ashadha"),
-
+    (0, 1): ("nak", "Shravana"),
+    (0, 2): ("nak", "U.Ashadha"),
+    (0, 3): ("nak", "P.Ashadha"),
+    (0, 4): ("nak", "Moola"),
+    (0, 5): ("nak", "Jyeshtha"),
+    (0, 6): ("nak", "Anuradha"),
+    (0, 7): ("nak", "Vishakha"),
+    (0, 8): ("nak", "Swati"),
+    (1, 8): ("nak", "Chitra"),
+    (2, 8): ("nak", "Hasta"),
+    (3, 8): ("nak", "U.Phalguni"),
+    (4, 8): ("nak", "P.Phalguni"),
+    (5, 8): ("nak", "Magha"),
+    (6, 8): ("nak", "Ashlesha"),
+    (7, 8): ("nak", "Pushya"),
+    (8, 8): ("nak", "Punarvasu"),
+    (8, 7): ("nak", "Ardra"),
+    (8, 6): ("nak", "Mrigshira"),
+    (8, 5): ("nak", "Rohini"),
+    (8, 4): ("nak", "Krittika"),
+    (8, 3): ("nak", "Bharani"),
+    (8, 2): ("nak", "Ashwini"),
+    (8, 1): ("nak", "Revati"),
+    (7, 0): ("nak", "U.Bhadra"),
+    (6, 0): ("nak", "P.Bhadra"),
+    (5, 0): ("nak", "Shatabhisha"),
+    (4, 0): ("nak", "Dhanishtha"),
+    (3, 0): ("nak", "Abhijit"),
+    (2, 0): ("nak", "U.Ashadha"),
+    (1, 0): ("nak", "P.Ashadha"),
     # Middle Ring - Rashis
-    (1,1): ("rashi", "Leo"), (1,2): ("rashi", "Virgo"), (1,3): ("rashi", "Libra"),
-    (1,4): ("rashi", "Scorpio"), (1,5): ("rashi", "Sagittarius"), (1,6): ("rashi", "Capricorn"),
-    (1,7): ("rashi", "Aquarius"),
-    (2,1): ("rashi", "Pisces"), (2,7): ("rashi", "Aries"),
-    (3,1): ("rashi", "Taurus"), (3,7): ("rashi", "Gemini"),
-    (4,1): ("rashi", "Cancer"), (4,7): ("rashi", "Leo"),
-    (5,1): ("rashi", "Virgo"), (5,7): ("rashi", "Libra"),
-    (6,1): ("rashi", "Scorpio"), (6,7): ("rashi", "Sagittarius"),
-    (7,1): ("rashi", "Capricorn"), (7,7): ("rashi", "Aquarius"),
-
+    (1, 1): ("rashi", "Leo"),
+    (1, 2): ("rashi", "Virgo"),
+    (1, 3): ("rashi", "Libra"),
+    (1, 4): ("rashi", "Scorpio"),
+    (1, 5): ("rashi", "Sagittarius"),
+    (1, 6): ("rashi", "Capricorn"),
+    (1, 7): ("rashi", "Aquarius"),
+    (2, 1): ("rashi", "Pisces"),
+    (2, 7): ("rashi", "Aries"),
+    (3, 1): ("rashi", "Taurus"),
+    (3, 7): ("rashi", "Gemini"),
+    (4, 1): ("rashi", "Cancer"),
+    (4, 7): ("rashi", "Leo"),
+    (5, 1): ("rashi", "Virgo"),
+    (5, 7): ("rashi", "Libra"),
+    (6, 1): ("rashi", "Scorpio"),
+    (6, 7): ("rashi", "Sagittarius"),
+    (7, 1): ("rashi", "Capricorn"),
+    (7, 7): ("rashi", "Aquarius"),
     # Innermost Ring - Tithis, Varas, Centre
-    (4,4): ("center", "Centre"),
-    (3,4): ("tithi", "Panchami"), (4,3): ("tithi", "Ashtami"),
-    (4,5): ("tithi", "Navami"), (5,4): ("tithi", "Ekadashi"),
-    (2,4): ("vara", "Sun"), (3,3): ("vara", "Mon"), (3,5): ("vara", "Tue"),
-    (5,3): ("vara", "Wed"), (5,5): ("vara", "Thu"), (6,4): ("vara", "Fri"),
+    (4, 4): ("center", "Centre"),
+    (3, 4): ("tithi", "Panchami"),
+    (4, 3): ("tithi", "Ashtami"),
+    (4, 5): ("tithi", "Navami"),
+    (5, 4): ("tithi", "Ekadashi"),
+    (2, 4): ("vara", "Sun"),
+    (3, 3): ("vara", "Mon"),
+    (3, 5): ("vara", "Tue"),
+    (5, 3): ("vara", "Wed"),
+    (5, 5): ("vara", "Thu"),
+    (6, 4): ("vara", "Fri"),
 }
 
 # Short names for nakshatras
 NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
+
 
 def nak_index(name: str) -> int:
     """Resolve nakshatra name (any alias) to 0-based index."""
