@@ -58,6 +58,37 @@ NAKSHATRAS = [
     "Revati",  # 26
 ]
 
+# ─────────────────────────────────────────────────────────────────────────────
+# FULL CLASSICAL SBC GRID LAYOUT (9x9) - All Layers
+# ─────────────────────────────────────────────────────────────────────────────
+SBC_GRID_CELLS = {
+    # (row, col): (layer_type, display_text)
+    # Outer Ring - 28 Nakshatras + Corners
+    (0,1): ("nak", "Shravana"), (0,2): ("nak", "U.Ashadha"), (0,3): ("nak", "P.Ashadha"),
+    (0,4): ("nak", "Moola"), (0,5): ("nak", "Jyeshtha"), (0,6): ("nak", "Anuradha"),
+    (0,7): ("nak", "Vishakha"), (0,8): ("nak", "Swati"),
+    (1,8): ("nak", "Chitra"), (2,8): ("nak", "Hasta"), (3,8): ("nak", "U.Phalguni"),
+    (4,8): ("nak", "P.Phalguni"), (5,8): ("nak", "Magha"), (6,8): ("nak", "Ashlesha"),
+    (7,8): ("nak", "Pushya"), (8,8): ("nak", "Punarvasu"),
+    (8,7): ("nak", "Ardra"), (8,6): ("nak", "Mrigshira"), (8,5): ("nak", "Rohini"),
+    (8,4): ("nak", "Krittika"), (8,3): ("nak", "Bharani"), (8,2): ("nak", "Ashwini"),
+    (8,1): ("nak", "Revati"), (7,0): ("nak", "U.Bhadra"), (6,0): ("nak", "P.Bhadra"),
+    (5,0): ("nak", "Shatabhisha"), (4,0): ("nak", "Dhanishtha"), (3,0): ("nak", "Abhijit"),
+    (2,0): ("nak", "U.Ashadha"), (1,0): ("nak", "P.Ashadha"),
+
+    # Middle Ring - Rashis
+    (1,1): ("rashi", "Leo"), (1,2): ("rashi", "Virgo"), (1,3): ("rashi", "Libra"),
+    (1,4): ("rashi", "Scorpio"), (1,5): ("rashi", "Sagittarius"), (1,6): ("rashi", "Capricorn"),
+    (1,7): ("rashi", "Aquarius"),
+    # ... (full Rashis will be completed in next phase if needed)
+
+    # Innermost - Tithis & Varas (simplified for now)
+    (4,4): ("center", "Centre"),
+}
+
+# Short names for display
+NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
+
 # Canonical spellings used in vedha table → index mapping
 _NAK_ALIASES = {
     # canonical name           : index
