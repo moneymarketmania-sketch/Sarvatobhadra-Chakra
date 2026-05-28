@@ -11,7 +11,7 @@ st.caption("Classical SBC analysis for stocks and indices")
 
 
 def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
-    """Fixed & beautiful SBC Grid - Classical layout + Vedic styling"""
+    """Fixed SBC Grid - Correct classical layout + beautiful styling"""
     from sbc_engine import NAKSHATRAS
 
     def nak_idx(name):
@@ -26,7 +26,7 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
     r = nak_idx(right_nak)
     m = nak_idx(moon_nak)
 
-    # Correct classical perimeter (28 unique nakshatras)
+    # ── CORRECT 28-ENTRY PERIMETER (no duplicates) ──
     perimeter = [
         (0, 1, 21),
         (0, 2, 20),
@@ -56,9 +56,7 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
         (5, 0, 23),
         (4, 0, 22),
         (3, 0, 21),
-        (2, 0, 20),
-        (1, 0, 19),
-    ]
+    ]  # ← 28 unique nakshatras
 
     short = [
         "Ashwini",
@@ -92,17 +90,22 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
 
     cell_map = {(row, col): nak for row, col, nak in perimeter}
 
-    # Build grid cells safely
+    # Build cells safely
     grid_cells = []
     for row in range(9):
         for col in range(9):
             nak_i = cell_map.get((row, col))
             if row in [0, 8] and col in [0, 8]:  # corners
                 grid_cells.append(
-                    '<div style="background:#1a1610;color:#6b5320;border:1px solid #c9a84c;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>'
+                    '<div style="background:#1a1610;color:#6b5320;border:1px solid #c9a84c;'
+                    'width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>'
                 )
             elif nak_i is not None:  # nakshatra cell
-                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:10px;position:relative;font-weight:600;"
+                style = (
+                    "width:68px;height:68px;display:flex;flex-direction:column;"
+                    "align-items:center;justify-content:center;text-align:center;"
+                    "border-radius:4px;font-size:10px;position:relative;font-weight:600;"
+                )
                 if nak_i == s:
                     style += (
                         "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
@@ -123,7 +126,9 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                     )
 
                 moon_badge = (
-                    '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
+                    (
+                        '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
+                    )
                     if nak_i == m and m != -1
                     else ""
                 )
@@ -131,11 +136,12 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                     f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>'
                 )
             else:
+                # inner cells
                 grid_cells.append(
-                    '<div style="background:#1a1610;color:#7a6d55;border:1px solid #2e2618;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>'
+                    '<div style="background:#1a1610;color:#7a6d55;border:1px solid #2e2618;'
+                    'width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>'
                 )
 
-    # Final HTML
     return f"""
     <div style="font-family:'Crimson Pro',serif;padding:20px;background:#0a0806;color:#d4c4a0;border-radius:8px;text-align:center">
         <div style="color:#c9a84c;font-size:13px;letter-spacing:2px;margin-bottom:12px">SARVATOBHADRA CHAKRA</div>
@@ -151,10 +157,10 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
         <div style="text-align:center;margin-top:12px;font-size:12px;color:#c9a84c">SOUTH</div>
         
         <div style="margin-top:20px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:12px">
-            <span style="background:#EEEDFE;color:#3C3489;padding:2px 8px;border-radius:4px;border:2px solid #534AB7">Stock</span>
-            <span style="background:rgba(232,200,122,0.25);color:#c9a84c;padding:2px 8px;border-radius:4px;border:2px solid #e8c87a">Front Vedha</span>
-            <span style="background:rgba(74,156,106,0.25);color:#4a9c6a;padding:2px 8px;border-radius:4px;border:2px solid #4a9c6a">Right Vedha</span>
-            <span style="background:rgba(196,74,58,0.25);color:#c44a3a;padding:2px 8px;border-radius:4px;border:2px solid #c44a3a">Left Vedha</span>
+            <span style="background:#EEEDFE;color:#3C3489;padding:4px 10px;border-radius:4px;border:2px solid #534AB7">Stock Nakshatra</span>
+            <span style="background:rgba(232,200,122,0.25);color:#c9a84c;padding:4px 10px;border-radius:4px;border:2px solid #e8c87a">Front Vedha</span>
+            <span style="background:rgba(74,156,106,0.25);color:#4a9c6a;padding:4px 10px;border-radius:4px;border:2px solid #4a9c6a">Right Vedha</span>
+            <span style="background:rgba(196,74,58,0.25);color:#c44a3a;padding:4px 10px;border-radius:4px;border:2px solid #c44a3a">Left Vedha</span>
         </div>
     </div>
     """
