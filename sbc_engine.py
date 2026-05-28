@@ -1,16 +1,4 @@
-=============================================================================
-SARVATOBHADRA CHAKRA (SBC) — ANALYSIS ENGINE  v2.0
-=============================================================================
-Classical rules per Phaladeepika Ch.26 + Brahma Yamala.
 
-Key accuracy improvements in v2:
-  - Three nakshatra derivation methods: listing-date, phonetics, manual
-  - Phonetic akshara→nakshatra mapping per classical Sanskrit pada system
-  - Abhijit correctly at index 27 (28th star, between U.Ashadha & Shravana)
-  - Vedha directions correct: Retro→Left(Vaama), Fast→Right(Dakshina), Normal→Front(Agra)
-  - Price-level analysis: SBC grid geometry maps CMP to key support/resistance
-  - yfinance CMP fetch with NSE/BSE symbol normalisation
-=============================================================================
 """
 from __future__ import annotations
 import hashlib
