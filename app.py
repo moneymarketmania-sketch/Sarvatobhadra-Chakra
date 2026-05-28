@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 import os
 import sys
 
-# ── Path setup — ensure local sbc_engine_fixed is imported ───────────────────
+# Ensure local sbc_engine directory takes resolution precedence
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sbc_engine import (
     analyse_symbol,
@@ -33,19 +33,8 @@ def build_sbc_grid_html(
     tithi: int,
     paksha: str,
     vara_today: str,
-    planetary_transits: dict = None,  # NEW: Pass current transits mapping Nakshatras -> Planet List
+    planetary_transits: dict = None,
 ) -> str:
-    """
-    Renders the full classical 9×9 Sarvatobhadra Chakra grid with:
-      • Outer ring: 28 Nakshatras + 4 Corner Vowels
-      • 2nd ring:   Sanskrit consonant groups (Aksharas)
-      • 3rd ring:   12 Rashis
-      • Inner ring: Tithi groups + Varas
-      • Centre:     SBC focal point
-    Highlights: Stock nak (purple), Front (blue), Left (green), Right (amber),
-                Moon nak (moon badge), Today's Tithi group (gold glow),
-                Today's Vara (highlighted).
-    """
     if planetary_transits is None:
         planetary_transits = {}
 
@@ -64,7 +53,6 @@ def build_sbc_grid_html(
     def _cell_nak_idx(cell_name: str) -> int:
         return _nak_idx(cell_name)
 
-    # Determine current tithi group and vara for highlighting
     tithi_group_map = {
         "T1-6\nPratipada": range(1, 7),
         "T7-12\nSaptami": range(7, 13),
@@ -78,20 +66,19 @@ def build_sbc_grid_html(
             active_tithi_cell = label
             break
 
-    # Standard clean labels for internal rings (No default planet icons)
     clean_vara_labels = {
-        "Sunday": "Sun Vara",
-        "Monday": "Mon Vara",
-        "Tuesday": "Tue Vara",
-        "Wednesday": "Wed Vara",
-        "Thursday": "Thu Vara",
-        "Friday": "Fri Vara",
-        "Saturday": "Sat Vara",
+        "Sunday": "☉ Sun",
+        "Monday": "☽ Mon",
+        "Tuesday": "♂ Tue",
+        "Wednesday": "☿ Wed",
+        "Thursday": "♃ Thu",
+        "Friday": "♀ Fri",
+        "Saturday": "♄ Sat",
     }
     active_vara_cell = clean_vara_labels.get(vara_today, "")
 
     cells_html = []
-    CELL = 62  # px per cell
+    CELL = 62  # Pixel height/width square metric
 
     for row in range(9):
         for col in range(9):
@@ -104,21 +91,7 @@ def build_sbc_grid_html(
                 continue
 
             layer, text = cell
-
-            # Clean up the display text if it's pointing to the raw static inner cells
             display_text = text
-            if layer == "vara":
-                # Convert the raw dictionary lookup string (e.g., "☉ Sun") to a clean label
-                raw_to_clean = {
-                    "☉ Sun": "Sun Vara",
-                    "☽ Mon": "Mon Vara",
-                    "♂ Tue": "Tue Vara",
-                    "☿ Wed": "Wed Vara",
-                    "♃ Thu": "Thu Vara",
-                    "♀ Fri": "Fri Vara",
-                    "♄ Sat": "Sat Vara",
-                }
-                display_text = raw_to_clean.get(text, text)
 
             base_style = (
                 f"width:{CELL}px;height:{CELL}px;"
@@ -134,40 +107,21 @@ def build_sbc_grid_html(
             if layer == "nak":
                 ni = _cell_nak_idx(text)
 
-                # Check if any actual ephemeris transits are sitting in this specific Nakshatra
-                # Matches against your data frame rows (e.g. text="Rohini", text="Swati")
                 if text in planetary_transits:
-                    planets_here = planetary_transits[
-                        text
-                    ]  # List of planet strings/icons
+                    planets_here = planetary_transits[text]
                     if planets_here:
                         planet_badges = f'<div style="background:#4B5563;color:#fff;padding:1px 3px;border-radius:3px;font-size:7px;margin-top:2px;font-weight:bold;">{" ".join(planets_here)}</div>'
 
                 if ni == s:
-                    style = (
-                        base_style
-                        + "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;font-weight:700;"
-                    )
+                    style = base_style + "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;font-weight:700;"
                 elif ni == f:
-                    style = (
-                        base_style
-                        + "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;font-weight:600;"
-                    )
+                    style = base_style + "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;font-weight:600;"
                 elif ni == l:
-                    style = (
-                        base_style
-                        + "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;font-weight:600;"
-                    )
+                    style = base_style + "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;font-weight:600;"
                 elif ni == r:
-                    style = (
-                        base_style
-                        + "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;font-weight:600;"
-                    )
+                    style = base_style + "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;font-weight:600;"
                 else:
-                    style = (
-                        base_style
-                        + "background:#fafafa;border:1px solid #ddd;color:#444;"
-                    )
+                    style = base_style + "background:#fafafa;border:1px solid #ddd;color:#444;"
 
                 if ni == m and m != -1:
                     moon_badge = '<div style="position:absolute;top:2px;right:3px;font-size:9px;">🌕</div>'
@@ -182,65 +136,39 @@ def build_sbc_grid_html(
                 )
 
             elif layer == "corner":
-                style = (
-                    base_style
-                    + "background:#F0E6FF;border:2px solid #9B7FD4;color:#5B2D8E;font-weight:700;font-size:10px;"
-                )
+                style = base_style + "background:#F0E6FF;border:2px solid #9B7FD4;color:#5B2D8E;font-weight:700;font-size:10px;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "vowel":
-                style = (
-                    base_style
-                    + "background:#FFF8E7;border:1px solid #DDB850;color:#7A5C00;font-size:9px;"
-                )
+                style = base_style + "background:#FFF8E7;border:1px solid #DDB850;color:#7A5C00;font-size:9px;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "rashi":
-                style = (
-                    base_style
-                    + "background:#E8F4FD;border:1px solid #7AB8E8;color:#1A4F7A;font-size:8px;font-weight:600;"
-                )
+                style = base_style + "background:#E8F4FD;border:1px solid #7AB8E8;color:#1A4F7A;font-size:8px;font-weight:600;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "tithi":
                 is_active = display_text == active_tithi_cell
                 if is_active:
-                    style = (
-                        base_style
-                        + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
-                    )
+                    style = base_style + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
                 else:
-                    style = (
-                        base_style
-                        + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
-                    )
+                    style = base_style + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "vara":
-                is_active = display_text == active_vara_cell
+                is_active = (display_text == active_vara_cell)
                 if is_active:
-                    style = (
-                        base_style
-                        + "background:#D1FAE5;border:2px solid #059669;color:#065F46;font-weight:700;box-shadow:0 0 6px #05966960;"
-                    )
+                    style = base_style + "background:#D1FAE5;border:2px solid #059669;color:#065F46;font-weight:700;box-shadow:0 0 6px #05966960;"
                 else:
-                    style = (
-                        base_style
-                        + "background:#F0FDF4;border:1px solid #6EE7B7;color:#065F46;font-size:9px;"
-                    )
+                    style = base_style + "background:#F0FDF4;border:1px solid #6EE7B7;color:#065F46;font-size:9px;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             elif layer == "center":
-                style = base_style + (
-                    "background:linear-gradient(135deg,#FAECE7,#FDE8D8);"
-                    "border:2px solid #C87941;color:#7C2D12;font-weight:700;font-size:9px;"
-                )
+                style = base_style + "background:linear-gradient(135deg,#FAECE7,#FDE8D8);border:2px solid #C87941;color:#7C2D12;font-weight:700;font-size:9px;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
             else:
-                style = (
-                    base_style + "background:#f5f5f5;color:#777;border:1px solid #ddd;"
-                )
+                style = base_style + "background:#f5f5f5;color:#777;border:1px solid #ddd;"
                 cells_html.append(f'<div style="{style}">{display_text}</div>')
 
     legend = f"""
@@ -256,54 +184,38 @@ def build_sbc_grid_html(
     """
 
     return f"""
-    <div style="padding:16px;background:#f7f7f7;border:1px solid #ccc;
-                border-radius:10px;text-align:center;font-family:'Segoe UI',sans-serif;">
-      <div style="margin-bottom:10px;font-weight:700;color:#2d2d2d;font-size:15px;
-                  letter-spacing:1px;">SARVATOBHADRA CHAKRA — 9×9</div>
+    <div style="padding:16px;background:#f7f7f7;border:1px solid #ccc;border-radius:10px;text-align:center;font-family:'Segoe UI',sans-serif;">
+      <div style="margin-bottom:10px;font-weight:700;color:#2d2d2d;font-size:15px;letter-spacing:1px;">SARVATOBHADRA CHAKRA — 9×9 MATRIX</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
-        <div style="writing-mode:vertical-rl;transform:rotate(180deg);
-                    font-size:10px;color:#888;letter-spacing:2px;">WEST ◄</div>
+        <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;color:#888;letter-spacing:2px;">WEST ◄</div>
         <div>
           <div style="font-size:10px;color:#888;margin-bottom:4px;letter-spacing:2px;">▲ NORTH</div>
-          <div style="display:grid;grid-template-columns:repeat(9,{CELL}px);
-                      grid-template-rows:repeat(9,{CELL}px);gap:2px;
-                      background:#ccc;padding:2px;border-radius:6px;">
+          <div style="display:grid;grid-template-columns:repeat(9,{CELL}px);grid-template-rows:repeat(9,{CELL}px);gap:2px;background:#ccc;padding:2px;border-radius:6px;">
             {"".join(cells_html)}
           </div>
           <div style="font-size:10px;color:#888;margin-top:4px;letter-spacing:2px;">▼ SOUTH</div>
         </div>
-        <div style="writing-mode:vertical-rl;font-size:10px;color:#888;
-                    letter-spacing:2px;">► EAST</div>
+        <div style="writing-mode:vertical-rl;font-size:10px;color:#888;letter-spacing:2px;">► EAST</div>
       </div>
       {legend}
-      <div style="margin-top:10px;font-size:10px;color:#aaa;">
-        5 Panchaka layers: Nakshatra · Akshara (consonants) · Rashi · Tithi · Vara
-      </div>
     </div>
     """
 
 
-# ── Inputs ────────────────────────────────────────────────────────────────────
+# ── INPUT DASHBOARD VIEW CONFIGURATION ───────────────────────────────────────
 col1, col2 = st.columns(2)
 
 with col1:
     symbol = st.text_input("Symbol (e.g. NIFTY, BANKNIFTY, RELIANCE)", value="NIFTY")
-    sector = st.text_input(
-        "Sector (e.g. Financial Services, Bank, IT, Pharma)", value="Financial Services"
-    )
+    sector = st.text_input("Sector (e.g. Financial Services, Bank, IT, Pharma)", value="Financial Services")
 
-    # NEW: Add calculation method selector to use the ephe files for historical listing dates
     nak_method = st.selectbox(
         "Stock Nakshatra Derivation Method",
         options=["phonetic", "listing_date", "manual"],
         format_func=lambda x: (
             "Phonetic (Name Vibration)"
             if x == "phonetic"
-            else (
-                "Historical Listing Date (Ephemeris)"
-                if x == "listing_date"
-                else "Manual Input"
-            )
+            else ("Historical Listing Date (Ephemeris)" if x == "listing_date" else "Manual Input")
         ),
     )
 
@@ -318,25 +230,21 @@ with col2:
         date_input = st.date_input("Select Date")
         time_input = st.time_input("Select Time (IST)")
 
-    # Resolve ephe path from CWD, not from __file__
     ephe_path = os.path.join(os.getcwd(), "ephe")
 
 analyse_btn = st.button("🔍 Run SBC Analysis", type="primary")
 
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# ── EXECUTION DEPLOYMENT LAYER ────────────────────────────────────────────────
 if analyse_btn and symbol:
-    with st.spinner("Computing planetary positions and SBC..."):
+    with st.spinner("Computing planetary positions and geometric vectors..."):
         try:
             if use_now:
                 dt = datetime.now(timezone.utc)
             else:
                 ist_naive = datetime.combine(date_input, time_input)
-                dt = ist_naive.replace(tzinfo=timezone.utc) - timedelta(
-                    hours=5, minutes=30
-                )
+                dt = ist_naive.replace(tzinfo=timezone.utc) - timedelta(hours=5, minutes=30)
 
-            # UPDATED: Now passing nak_method and manual_nak down to the engine
             result = analyse_symbol(
                 symbol=symbol.strip().upper(),
                 sector=sector.strip(),
@@ -348,17 +256,15 @@ if analyse_btn and symbol:
 
             st.markdown("---")
 
-            # ── Metrics ───────────────────────────────────────────────────────
+            # Metrics Panel Layout
             m1, m2, m3, m4, m5 = st.columns(5)
             m1.metric("SBC Score", f"{result.sbc_score}/100")
             m2.metric("Signal", result.sbc_label)
             m3.metric("Stock Nakshatra", result.stock_nak)
             m4.metric("Tithi", f"{result.tithi} ({result.paksha})")
-            m5.metric(
-                "Bullish/Bearish", f"{result.bullish_count}↑ / {result.bearish_count}↓"
-            )
+            m5.metric("Bullish/Bearish", f"{result.bullish_count}↑ / {result.bearish_count}↓")
 
-            # ── Vedha directions ──────────────────────────────────────────────
+            # Aspect Rays Overview
             st.subheader(f"Vedha Directions for {result.stock_nak}")
             d1, d2, d3 = st.columns(3)
             d1.info(f"**FRONT (Agra)** → {result.vedha_front_nak}")
@@ -366,91 +272,44 @@ if analyse_btn and symbol:
             d3.info(f"**RIGHT (Dakshina)** → {result.vedha_right_nak}")
 
             if result.moon_malefic_paksha:
-                st.warning(
-                    "⚠️ Moon is acting as MALEFIC (Krishna Paksha rule active — Tithi 23–30 or 1–5)"
-                )
+                st.warning("⚠️ Moon is acting as MALEFIC (Krishna Paksha rule active — Tithi 23–30 or 1–5)")
 
-            # ── Planet table ──────────────────────────────────────────────────
+            # Detailed Planetary Table
             st.subheader("Planet-by-Planet Vedha Analysis")
             import pandas as pd
 
             rows = []
             for pr in result.planet_results:
-                # Safely extract directions using the engine's true property names
-                raw_directions = getattr(pr, "vedha_directions", [])
-                if not raw_directions and hasattr(pr, "active_directions"):
-                    raw_directions = pr.active_directions
-
-                # Safely resolve if the planet hits the target stock
-                is_hit = (
-                    getattr(pr, "is_vedha_hit", False)
-                    or getattr(pr, "hits_stock", False)
-                    or getattr(pr, "hits", False)
-                )
-                if isinstance(
-                    is_hit, list
-                ):  # If your engine returns hits as a list of targets
-                    is_hit = len(is_hit) > 0
-
                 rows.append(
                     {
-                        "Planet": getattr(pr, "planet", ""),
-                        "Current Nakshatra": getattr(pr, "planet_nak", ""),
-                        "Motion Speed": f"{getattr(pr, 'motion_speed', 0.0):.2f}°/d",
-                        "Vedha Directions": (
-                            " + ".join(raw_directions) if raw_directions else "Front"
-                        ),
-                        "Hits Stock?": "yes" if is_hit else "no",
-                        "SBC Weight": f"{getattr(pr, 'score_contribution', 0.0):+.1f}",
+                        "Planet": pr.planet,
+                        "Current Nakshatra": pr.planet_nak,
+                        "Motion Speed": f"{pr.motion_speed:.4f}°/d",
+                        "Vedha Directions": " + ".join([x.capitalize() for x in pr.active_directions]),
+                        "Hits Stock Elements?": "Yes" if pr.hits_stock else "No",
+                        "SBC Weight": f"{pr.score_contribution:+.1f}",
                     }
                 )
-            df = pd.DataFrame(rows)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
-            # ── SBC Grid ──────────────────────────────────────────────────────
-            st.subheader("Sarvatobhadra Chakra — Full Classical 9×9 Grid")
+            # Core Geometric Layout Grid Component
+            st.subheader("Sarvatobhadra Chakra — Full Classical 9×9 Grid Layout")
 
-            moon_result = next(
-                (pr for pr in result.planet_results if pr.planet == "Moon"), None
-            )
+            moon_result = next((pr for pr in result.planet_results if pr.planet == "Moon"), None)
             moon_nak = moon_result.planet_nak if moon_result else ""
 
-            # Today's weekday in IST
             ist_now = dt + timedelta(hours=5, minutes=30)
             vara_today = ist_now.strftime("%A")
 
-            # 1. Build a dictionary mapping Nakshatras to their active transiting planets
             transits_dict = {}
-            if hasattr(result, "planet_results") and result.planet_results:
-                for pr in result.planet_results:
-                    nak_name = pr.planet_nak
-                    p_label = pr.planet
+            glyph_map = {
+                "Gamma": "☉", "Sun": "☉ Sun", "Moon": "☽ Mon", "Mars": "♂ Mars",
+                "Mercury": "☿ Mer", "Jupiter": "♃ Jup", "Venus": "♀ Ven", "Saturn": "♄ Sat"
+            }
+            for pr in result.planet_results:
+                lbl = glyph_map.get(pr.planet, pr.planet)
+                transits_dict.setdefault(pr.planet_nak, []).append(lbl)
 
-                    # Convert raw names to standard Vedic glyph formats for the perimeter view
-                    if p_label == "Sun":
-                        p_label = "☉ Sun"
-                    elif p_label == "Moon":
-                        p_label = "☽ Mon"
-                    elif p_label == "Mars":
-                        p_label = "♂ Tue"
-                    elif p_label == "Mercury":
-                        p_label = "☿ Wed"
-                    elif p_label == "Jupiter":
-                        p_label = "♃ Thu"
-                    elif p_label == "Venus":
-                        p_label = "♀ Fri"
-                    elif p_label == "Saturn":
-                        p_label = "♄ Sat"
-                    elif p_label == "Rahu":
-                        p_label = "Rahu"
-                    elif p_label == "Ketu":
-                        p_label = "Ketu"
-
-                    if nak_name not in transits_dict:
-                        transits_dict[nak_name] = []
-                    transits_dict[nak_name].append(p_label)
-
-            # 2. Render the grid passing the mapped transits into your updated layout function
             st.components.v1.html(
                 build_sbc_grid_html(
                     stock_nak=result.stock_nak,
@@ -461,79 +320,39 @@ if analyse_btn and symbol:
                     tithi=result.tithi,
                     paksha=result.paksha,
                     vara_today=vara_today,
-                    planetary_transits=transits_dict,  # Safely passes the cleaned layout data
+                    planetary_transits=transits_dict,
                 ),
-                height=760,
+                height=780,
                 scrolling=False,
             )
 
-            # ── Price Levels Dashboard UI ──────────────────────────────────────────────────
+            # Algorithmic Support & Resistance Interface Dashboard
             if result.price_levels:
                 st.subheader("🎯 SBC Algorithmic Support & Resistance Levels")
-
                 level_rows = []
                 for lv in result.price_levels:
-                    icon = (
-                        "🔴 Resistance"
-                        if lv["type"] == "resistance"
-                        else "🟢 Support" if lv["type"] == "support" else "🔵 Pivot/CMP"
-                    )
+                    icon = "🔴 Resistance" if lv["type"] == "resistance" else "🟢 Support" if lv["type"] == "support" else "🔵 Baseline CMP"
                     level_rows.append(
                         {
                             "Type": icon,
                             "Price Level": f"₹ {lv['price']:,.2f}",
                             "Chakra Assignment": lv["label"],
                             "Strength": lv["strength"].capitalize(),
-                            "Transiting Planets": (
-                                ", ".join(lv["planets"]) if lv["planets"] else "None"
-                            ),
+                            "Transiting Planets": ", ".join(lv["planets"]) if lv["planets"] else "None",
                             "Technical Note": lv["note"],
                         }
                     )
                 st.table(level_rows)
 
-            # ── Commodity / Sector ────────────────────────────────────────────
+            # Sector Commodity Signifiers
             st.subheader("Commodity / Sector Relevance")
-            st.write(
-                f"**Stock Nakshatra ({result.stock_nak}) signifies:** "
-                f"{', '.join(result.stock_commodities)}"
-            )
+            st.write(f"**Stock Nakshatra ({result.stock_nak}) signifies:** {', '.join(result.stock_commodities)}")
             if result.sector_commodity_matches:
-                st.success(
-                    f"✅ Sector match found: {', '.join(result.sector_commodity_matches)}"
-                )
+                st.success(f"✅ Sector match found: {', '.join(result.sector_commodity_matches)}")
             else:
                 st.info("No direct commodity match for this sector.")
 
-            # ── Classical rules explainer ──────────────────────────────────────
-            with st.expander("📖 How to read this analysis"):
-                st.markdown("""
-**Sarvatobhadra Chakra** is a classical 9×9 Vedic matrix with 5 identity layers (Panchaka):
-
-| Ring | Layer | Classical Meaning |
-|------|-------|------------------|
-| Outer (32 sq) | 28 Nakshatras + 4 Corner Vowels | Macro-cosmic stellar influences |
-| 2nd (24 sq) | Sanskrit Consonant Groups (Aksharas) | Phonetic/name vibration |
-| 3rd (16 sq) | 12 Rashis (Zodiac Signs) | Physical manifestation / houses |
-| Inner (8 sq) | 5 Tithi groups + 7 Varas | Temporal timing |
-| Centre (1 sq) | Focal point | The core of the reading |
-
-**Vedha (Piercing) Directions:**
-- **Front (Agra)** — used by planets in normal direct motion
-- **Left (Vaama)** — used by retrograde planets & those just turned direct (grace period)
-- **Right (Dakshina)** — used by fast/Atichari planets
-
-**Sun/Moon/Rahu/Ketu** always cast Vedha on all 3 sides simultaneously.
-
-**Benefic Vedha** (Jupiter, Venus, bright Moon, unafflicted Mercury) → bearish pressure
-**Malefic Vedha** (Sun, Mars, Saturn, Rahu, Ketu) → bullish/reversal signal
-                """)
-
         except Exception as e:
-            st.error(f"Error: {e}")
+            st.error(f"Execution Error: {e}")
             import traceback
-
             st.code(traceback.format_exc())
-            st.info(
-                "Make sure the `ephe/` folder is present alongside app.py with the .se1 files."
-            )
