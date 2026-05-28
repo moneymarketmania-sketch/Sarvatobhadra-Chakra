@@ -5,6 +5,8 @@ import dataclasses
 import swisseph as swe
 import yfinance as yf
 
+swe.set_sid_mode(swe.SIDM_LAHIRI)
+
 # ── MASTER DATA CONFIGURATIONS ───────────────────────────────────────────────
 NAKSHATRAS_28 = [
     "Ashwini",
@@ -485,6 +487,7 @@ def analyse_symbol(
     st_r, st_c = get_cell_coord_by_nak(stock_nak) or (0, 2)
 
     # 3. Precise Planetary Ephemeris with State Flags
+
     jd = swe.julday(
         dt.year, dt.month, dt.day, dt.hour + dt.minute / 60.0 + dt.second / 3600.0
     )
@@ -501,7 +504,7 @@ def analyse_symbol(
 
     planet_positions = {}
     for p_name, p_id in planets_spec.items():
-        res, _ = swe.calc_ut(jd, p_id, swe.FLG_SPEED)
+        res, _ = swe.calc_ut(jd, p_id, swe.FLG_SIDEREAL | swe.FLG_SPEED)
         lon, speed = res[0], res[3]
         # Dynamic State Detection
         planet_positions[p_name] = {
@@ -536,11 +539,11 @@ def analyse_symbol(
             dirs = ["front", "left", "right"]
         else:
             if data["is_retro"]:
-                dirs = ["right"]
+                dirs = ["Left"(Vaama)]
             elif data["is_atichari"]:
-                dirs = ["front"]
+                dirs = ["Right"(Dakshina)]
             else:
-                dirs = ["left"]
+                dirs = ["Front"(Agra)]
 
         p_nak = get_nakshatra_28_by_lon(data["lon"])
         p_coord = get_cell_coord_by_nak(p_nak)
@@ -698,33 +701,17 @@ def analyse_symbol(
         sbc_label = "Neutral / Consolidation"
 
     # Define Vedha variables (Assuming you want to track the primary Nakshatra hit)
-    # If these are meant to be specific Nakshatra names, you must map them 
+    # If these are meant to be specific Nakshatra names, you must map them
     # from your ray-casting results or leave them as empty strings if not yet mapped.
     v_front, v_left, v_right = "N/A", "N/A", "N/A"
-    
+
     # Ensure moon_malefic_paksha is defined in the outer scope
     # (It was defined inside the loop, so define it here for the return)
-    moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
+    moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (
+        paksha == "Shukla" and tithi_raw <= 5
+    )
 
     # Now the return statement will function correctly
-    return SBCResult(
-        sbc_score=sbc_score,
-        sbc_label=sbc_label,
-        stock_nak=stock_nak,
-        tithi=tithi_raw,
-        paksha=paksha,
-        bullish_count=bullish_count,
-        bearish_count=bearish_count,
-        vedha_front_nak=v_front,
-        vedha_left_nak=v_left,
-        vedha_right_nak=v_right,
-        moon_malefic_paksha=moon_malefic_paksha,
-        planet_results=planet_results,
-        price_levels=price_levels,
-        stock_commodities=stock_commodities,
-        sector_commodity_matches=sector_matches,
-    )
-    
     return SBCResult(
         sbc_score=sbc_score,
         sbc_label=sbc_label,
