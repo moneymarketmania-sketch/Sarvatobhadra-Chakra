@@ -11,8 +11,8 @@ st.caption("Classical SBC analysis for stocks and indices")
 
 
 def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
-    """Phase 1 Complete - Full classical 9×9 SBC grid with outer + inner layers"""
-    from sbc_engine import NAKSHATRAS
+    """Phase 1 Complete - Full classical 9×9 SBC grid with all layers"""
+    from sbc_engine import NAKSHATRAS, SBC_GRID_CELLS, NAK_SHORT
 
     def nak_idx(name):
         for i, n in enumerate(NAKSHATRAS):
@@ -26,30 +26,14 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
     r = nak_idx(right_nak)
     m = nak_idx(moon_nak)
 
-    # Full correct perimeter (28 nakshatras)
-    perimeter = [
-        (0,1,21),(0,2,20),(0,3,19),(0,4,18),(0,5,17),(0,6,16),(0,7,15),(0,8,14),
-        (1,8,13),(2,8,12),(3,8,11),(4,8,10),(5,8,9),(6,8,8),(7,8,7),(8,8,6),
-        (8,7,5),(8,6,4),(8,5,3),(8,4,2),(8,3,1),(8,2,0),(8,1,26),
-        (7,0,25),(6,0,24),(5,0,23),(4,0,22),(3,0,21),(2,0,20),(1,0,19)
-    ]
-
-    short = [
-        "Ashwini","Bharani","Krittika","Rohini","Mrigshira","Ardra","Punarvasu","Pushya",
-        "Ashlesha","Magha","P.Phalguni","U.Phalguni","Hasta","Chitra","Swati","Vishakha",
-        "Anuradha","Jyeshtha","Moola","P.Ashadha","U.Ashadha","Shravana","Dhanishtha",
-        "Shatabhisha","P.Bhadra","U.Bhadra","Revati"
-    ]
-
-    cell_map = {(row, col): nak for row, col, nak in perimeter}
-
     grid_cells = []
     for row in range(9):
         for col in range(9):
-            nak_i = cell_map.get((row, col))
-            if row in [0, 8] and col in [0, 8]:  # corners
-                grid_cells.append('<div style="background:#1a1610;color:#666;border:1px solid #444;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>')
-            elif nak_i is not None:  # outer nakshatra ring
+            cell = SBC_GRID_CELLS.get((row, col), ("inner", "•"))
+            layer, text = cell
+
+            if layer == "nak":
+                nak_i = nak_idx(text)
                 style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;position:relative;font-weight:600;"
                 if nak_i == s:
                     style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
@@ -62,15 +46,19 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                 else:
                     style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
                 moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
-                grid_cells.append(f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>')
+                grid_cells.append(f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>')
             else:
-                # Inner layers (Rashis, Tithis, Varas, Centre)
-                if (row, col) == (4,4):
-                    grid_cells.append('<div style="background:#FAECE7;color:#993C1D;font-weight:700;width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:11px;">Centre</div>')
-                elif row in [1,2,3,4,5,6,7] and col in [1,2,3,4,5,6,7]:
-                    grid_cells.append('<div style="background:#E6F1FB;color:#185FA5;border:1px solid #378ADD;width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;">Rashi</div>')
+                if layer == "rashi":
+                    style = "background:#E6F1FB;color:#185FA5;border:1px solid #378ADD;font-size:9px;"
+                elif layer == "tithi":
+                    style = "background:#FAEEDA;color:#854F0B;border:1px solid #BA7517;font-size:9px;"
+                elif layer == "vara":
+                    style = "background:#EAF3DE;color:#3B6D11;border:1px solid #639922;font-size:9px;"
+                elif layer == "center":
+                    style = "background:#FAECE7;color:#993C1D;font-weight:700;font-size:11px;"
                 else:
-                    grid_cells.append('<div style="background:#f0f0f0;color:#777;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;">•</div>')
+                    style = "background:#f0f0f0;color:#777;border:1px solid #ddd;font-size:9px;"
+                grid_cells.append(f'<div style="width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;{style}">{text}</div>')
 
     return f"""
     <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
