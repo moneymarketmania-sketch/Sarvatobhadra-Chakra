@@ -143,14 +143,6 @@ _NAK_ALIASES = {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# FULL CLASSICAL SBC 9×9 GRID LAYERS (Phase 1 - Complete)
-# ─────────────────────────────────────────────────────────────────────────────
-SBC_GRID_CELLS = {...}  # ← Keep the SBC_GRID_CELLS you already have here
-
-# Short names for nakshatras
-NAK_SHORT = {i: name[:8] for i, name in enumerate(NAKSHATRAS)}
-
-# ─────────────────────────────────────────────────────────────────────────────
 # FULL CLASSICAL SBC 9×9 GRID LAYERS (Phase 1 - Complete & Clean)
 # ─────────────────────────────────────────────────────────────────────────────
 SBC_GRID_CELLS = {
