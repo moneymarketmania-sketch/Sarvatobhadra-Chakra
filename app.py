@@ -6,8 +6,13 @@ import sys
 # ── Path setup — ensure local sbc_engine_fixed is imported ───────────────────
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sbc_engine import (
-    analyse_symbol, SBCResult, NAKSHATRAS, NAKSHATRAS_28,
-    SBC_GRID_CELLS, NAK_SHORT, nak_index,
+    analyse_symbol,
+    SBCResult,
+    NAKSHATRAS,
+    NAKSHATRAS_28,
+    SBC_GRID_CELLS,
+    NAK_SHORT,
+    nak_index,
 )
 
 st.set_page_config(page_title="SBC Analyser", page_icon="🔵", layout="wide")
@@ -19,9 +24,16 @@ st.caption("Classical SBC analysis — complete 9×9 grid with all 5 Panchaka la
 # ─────────────────────────────────────────────────────────────────────────────
 # COMPLETE 9×9 SBC GRID RENDERER
 # ─────────────────────────────────────────────────────────────────────────────
-def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
-                         right_nak: str, moon_nak: str, tithi: int,
-                         paksha: str, vara_today: str) -> str:
+def build_sbc_grid_html(
+    stock_nak: str,
+    front_nak: str,
+    left_nak: str,
+    right_nak: str,
+    moon_nak: str,
+    tithi: int,
+    paksha: str,
+    vara_today: str,
+) -> str:
     """
     Renders the full classical 9×9 Sarvatobhadra Chakra grid with:
       • Outer ring: 28 Nakshatras + 4 Corner Vowels
@@ -33,6 +45,7 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
                 Moon nak (moon badge), Today's Tithi group (gold glow),
                 Today's Vara (highlighted).
     """
+
     def _nak_idx(name: str) -> int:
         try:
             return nak_index(name)
@@ -52,10 +65,10 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
 
     # Determine current tithi group and vara for highlighting
     tithi_group_map = {
-        "T1-6\nPratipada":  range(1, 7),
-        "T7-12\nSaptami":   range(7, 13),
+        "T1-6\nPratipada": range(1, 7),
+        "T7-12\nSaptami": range(7, 13),
         "T13-18\nTrayodashi": range(13, 19),
-        "T19-24\nNavami":   range(19, 25),
+        "T19-24\nNavami": range(19, 25),
         "T25-30\nPanchami": range(25, 31),
     }
     active_tithi_cell = None
@@ -66,13 +79,13 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
 
     # Map today's weekday to vara label
     vara_label_map = {
-        "Sunday":    "☉ Sun",
-        "Monday":    "☽ Mon",
-        "Tuesday":   "♂ Tue",
+        "Sunday": "☉ Sun",
+        "Monday": "☽ Mon",
+        "Tuesday": "♂ Tue",
         "Wednesday": "☿ Wed",
-        "Thursday":  "♃ Thu",
-        "Friday":    "♀ Fri",
-        "Saturday":  "♄ Sat",
+        "Thursday": "♃ Thu",
+        "Friday": "♀ Fri",
+        "Saturday": "♄ Sat",
     }
     active_vara_cell = vara_label_map.get(vara_today, "")
 
@@ -105,15 +118,30 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
             if layer == "nak":
                 ni = _cell_nak_idx(text)
                 if ni == s:
-                    style = base_style + "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;font-weight:700;"
+                    style = (
+                        base_style
+                        + "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;font-weight:700;"
+                    )
                 elif ni == f:
-                    style = base_style + "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;font-weight:600;"
+                    style = (
+                        base_style
+                        + "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;font-weight:600;"
+                    )
                 elif ni == l:
-                    style = base_style + "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;font-weight:600;"
+                    style = (
+                        base_style
+                        + "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;font-weight:600;"
+                    )
                 elif ni == r:
-                    style = base_style + "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;font-weight:600;"
+                    style = (
+                        base_style
+                        + "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;font-weight:600;"
+                    )
                 else:
-                    style = base_style + "background:#fafafa;border:1px solid #ddd;color:#444;"
+                    style = (
+                        base_style
+                        + "background:#fafafa;border:1px solid #ddd;color:#444;"
+                    )
                 if ni == m and m != -1:
                     moon_badge = '<div style="position:absolute;top:2px;right:3px;font-size:9px;">🌕</div>'
                 display_name = NAK_SHORT.get(ni, text[:8])
@@ -121,35 +149,56 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
                     f'<div style="{style}">'
                     f'<span style="font-size:7px;color:#888;font-weight:400;">#{ni+1 if ni < 27 else "Ab"}</span>'
                     f'<span style="font-size:8px;font-weight:600;">{display_name}</span>'
-                    f'{moon_badge}</div>'
+                    f"{moon_badge}</div>"
                 )
 
             elif layer == "corner":
-                style = base_style + "background:#F0E6FF;border:2px solid #9B7FD4;color:#5B2D8E;font-weight:700;font-size:10px;"
+                style = (
+                    base_style
+                    + "background:#F0E6FF;border:2px solid #9B7FD4;color:#5B2D8E;font-weight:700;font-size:10px;"
+                )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             elif layer == "vowel":
-                style = base_style + "background:#FFF8E7;border:1px solid #DDB850;color:#7A5C00;font-size:9px;"
+                style = (
+                    base_style
+                    + "background:#FFF8E7;border:1px solid #DDB850;color:#7A5C00;font-size:9px;"
+                )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             elif layer == "rashi":
-                style = base_style + "background:#E8F4FD;border:1px solid #7AB8E8;color:#1A4F7A;font-size:8px;font-weight:600;"
+                style = (
+                    base_style
+                    + "background:#E8F4FD;border:1px solid #7AB8E8;color:#1A4F7A;font-size:8px;font-weight:600;"
+                )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             elif layer == "tithi":
-                is_active = (text == active_tithi_cell)
+                is_active = text == active_tithi_cell
                 if is_active:
-                    style = base_style + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
+                    style = (
+                        base_style
+                        + "background:#FFF3C4;border:2px solid #F59E0B;color:#92400E;font-weight:700;box-shadow:0 0 6px #F59E0B60;"
+                    )
                 else:
-                    style = base_style + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
+                    style = (
+                        base_style
+                        + "background:#FDF6E3;border:1px solid #E8C96A;color:#7A5C00;font-size:7px;"
+                    )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             elif layer == "vara":
-                is_active = (text == active_vara_cell)
+                is_active = text == active_vara_cell
                 if is_active:
-                    style = base_style + "background:#D1FAE5;border:2px solid #059669;color:#065F46;font-weight:700;box-shadow:0 0 6px #05966960;"
+                    style = (
+                        base_style
+                        + "background:#D1FAE5;border:2px solid #059669;color:#065F46;font-weight:700;box-shadow:0 0 6px #05966960;"
+                    )
                 else:
-                    style = base_style + "background:#F0FDF4;border:1px solid #6EE7B7;color:#065F46;font-size:9px;"
+                    style = (
+                        base_style
+                        + "background:#F0FDF4;border:1px solid #6EE7B7;color:#065F46;font-size:9px;"
+                    )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             elif layer == "center":
@@ -160,7 +209,9 @@ def build_sbc_grid_html(stock_nak: str, front_nak: str, left_nak: str,
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
             else:
-                style = base_style + "background:#f5f5f5;color:#777;border:1px solid #ddd;"
+                style = (
+                    base_style + "background:#f5f5f5;color:#777;border:1px solid #ddd;"
+                )
                 cells_html.append(f'<div style="{style}">{text}</div>')
 
     legend = f"""
@@ -209,8 +260,29 @@ col1, col2 = st.columns(2)
 
 with col1:
     symbol = st.text_input("Symbol (e.g. NIFTY, BANKNIFTY, RELIANCE)", value="NIFTY")
-    sector = st.text_input("Sector (e.g. Financial Services, Bank, IT, Pharma)",
-                           value="Financial Services")
+    sector = st.text_input(
+        "Sector (e.g. Financial Services, Bank, IT, Pharma)", value="Financial Services"
+    )
+
+    # NEW: Add calculation method selector to use the ephe files for historical listing dates
+    nak_method = st.selectbox(
+        "Stock Nakshatra Derivation Method",
+        options=["phonetic", "listing_date", "manual"],
+        format_func=lambda x: (
+            "Phonetic (Name Vibration)"
+            if x == "phonetic"
+            else (
+                "Historical Listing Date (Ephemeris)"
+                if x == "listing_date"
+                else "Manual Input"
+            )
+        ),
+    )
+
+    if nak_method == "manual":
+        manual_nak = st.selectbox("Select Nakshatra", options=NAKSHATRAS_28)
+    else:
+        manual_nak = None
 
 with col2:
     use_now = st.checkbox("Use current date & time (UTC)", value=True)
@@ -218,7 +290,7 @@ with col2:
         date_input = st.date_input("Select Date")
         time_input = st.time_input("Select Time (IST)")
 
-    # BUG FIX: resolve ephe path from CWD, not from __file__
+    # Resolve ephe path from CWD, not from __file__
     ephe_path = os.path.join(os.getcwd(), "ephe")
 
 analyse_btn = st.button("🔍 Run SBC Analysis", type="primary")
@@ -232,13 +304,18 @@ if analyse_btn and symbol:
                 dt = datetime.now(timezone.utc)
             else:
                 ist_naive = datetime.combine(date_input, time_input)
-                dt = ist_naive.replace(tzinfo=timezone.utc) - timedelta(hours=5, minutes=30)
+                dt = ist_naive.replace(tzinfo=timezone.utc) - timedelta(
+                    hours=5, minutes=30
+                )
 
+            # UPDATED: Now passing nak_method and manual_nak down to the engine
             result = analyse_symbol(
                 symbol=symbol.strip().upper(),
                 sector=sector.strip(),
                 ephe_path=ephe_path,
                 dt=dt,
+                nak_method=nak_method,
+                manual_nak=manual_nak,
             )
 
             st.markdown("---")
@@ -249,7 +326,9 @@ if analyse_btn and symbol:
             m2.metric("Signal", result.sbc_label)
             m3.metric("Stock Nakshatra", result.stock_nak)
             m4.metric("Tithi", f"{result.tithi} ({result.paksha})")
-            m5.metric("Bullish/Bearish", f"{result.bullish_count}↑ / {result.bearish_count}↓")
+            m5.metric(
+                "Bullish/Bearish", f"{result.bullish_count}↑ / {result.bearish_count}↓"
+            )
 
             # ── Vedha directions ──────────────────────────────────────────────
             st.subheader(f"Vedha Directions for {result.stock_nak}")
@@ -259,7 +338,9 @@ if analyse_btn and symbol:
             d3.info(f"**RIGHT (Dakshina)** → {result.vedha_right_nak}")
 
             if result.moon_malefic_paksha:
-                st.warning("⚠️ Moon is acting as MALEFIC (Krishna Paksha rule active — Tithi 23–30 or 1–5)")
+                st.warning(
+                    "⚠️ Moon is acting as MALEFIC (Krishna Paksha rule active — Tithi 23–30 or 1–5)"
+                )
 
             # ── Planet table ──────────────────────────────────────────────────
             st.subheader("Planet-by-Planet Vedha Analysis")
@@ -267,29 +348,33 @@ if analyse_btn and symbol:
 
             rows = []
             for pr in result.planet_results:
-                rows.append({
-                    "Planet":       pr.planet,
-                    "Nakshatra":    pr.planet_nak,
-                    "Pada":         pr.planet_pada,
-                    "Directions":   " + ".join(pr.active_directions),
-                    "Hits Stock":   "✅ Yes" if pr.hits else "—",
-                    "Hit Types":    " | ".join(pr.hits) if pr.hits else "—",
-                    "Nature":       "Benefic" if pr.is_benefic else "Malefic",
-                    "Strength":     pr.strength.capitalize(),
-                    "Debilitated":  "Yes" if pr.is_debilitated else "—",
-                    "Combust":      "Yes" if pr.is_combust else "—",
-                    "Mutual Vedha": "Yes" if pr.mutual_vedha else "—",
-                    "Score":        f"{pr.raw_score:+.1f}",
-                    "Notes":        " | ".join(pr.notes) if pr.notes else "—",
-                })
+                rows.append(
+                    {
+                        "Planet": pr.planet,
+                        "Nakshatra": pr.planet_nak,
+                        "Pada": pr.planet_pada,
+                        "Directions": " + ".join(pr.active_directions),
+                        "Hits Stock": "✅ Yes" if pr.hits else "—",
+                        "Hit Types": " | ".join(pr.hits) if pr.hits else "—",
+                        "Nature": "Benefic" if pr.is_benefic else "Malefic",
+                        "Strength": pr.strength.capitalize(),
+                        "Debilitated": "Yes" if pr.is_debilitated else "—",
+                        "Combust": "Yes" if pr.is_combust else "—",
+                        "Mutual Vedha": "Yes" if pr.mutual_vedha else "—",
+                        "Score": f"{pr.raw_score:+.1f}",
+                        "Notes": " | ".join(pr.notes) if pr.notes else "—",
+                    }
+                )
             df = pd.DataFrame(rows)
             st.dataframe(df, use_container_width=True)
 
             # ── SBC Grid ──────────────────────────────────────────────────────
             st.subheader("Sarvatobhadra Chakra — Full Classical 9×9 Grid")
 
-            moon_result = next((pr for pr in result.planet_results if pr.planet == "Moon"), None)
-            moon_nak    = moon_result.planet_nak if moon_result else ""
+            moon_result = next(
+                (pr for pr in result.planet_results if pr.planet == "Moon"), None
+            )
+            moon_nak = moon_result.planet_nak if moon_result else ""
 
             # Today's weekday in IST
             ist_now = dt + timedelta(hours=5, minutes=30)
@@ -297,14 +382,14 @@ if analyse_btn and symbol:
 
             st.components.v1.html(
                 build_sbc_grid_html(
-                    stock_nak  = result.stock_nak,
-                    front_nak  = result.vedha_front_nak,
-                    left_nak   = result.vedha_left_nak,
-                    right_nak  = result.vedha_right_nak,
-                    moon_nak   = moon_nak,
-                    tithi      = result.tithi,
-                    paksha     = result.paksha,
-                    vara_today = vara_today,
+                    stock_nak=result.stock_nak,
+                    front_nak=result.vedha_front_nak,
+                    left_nak=result.vedha_left_nak,
+                    right_nak=result.vedha_right_nak,
+                    moon_nak=moon_nak,
+                    tithi=result.tithi,
+                    paksha=result.paksha,
+                    vara_today=vara_today,
                 ),
                 height=760,
                 scrolling=False,
@@ -312,10 +397,14 @@ if analyse_btn and symbol:
 
             # ── Commodity / Sector ────────────────────────────────────────────
             st.subheader("Commodity / Sector Relevance")
-            st.write(f"**Stock Nakshatra ({result.stock_nak}) signifies:** "
-                     f"{', '.join(result.stock_commodities)}")
+            st.write(
+                f"**Stock Nakshatra ({result.stock_nak}) signifies:** "
+                f"{', '.join(result.stock_commodities)}"
+            )
             if result.sector_commodity_matches:
-                st.success(f"✅ Sector match found: {', '.join(result.sector_commodity_matches)}")
+                st.success(
+                    f"✅ Sector match found: {', '.join(result.sector_commodity_matches)}"
+                )
             else:
                 st.info("No direct commodity match for this sector.")
 
@@ -346,5 +435,8 @@ if analyse_btn and symbol:
         except Exception as e:
             st.error(f"Error: {e}")
             import traceback
+
             st.code(traceback.format_exc())
-            st.info("Make sure the `ephe/` folder is present alongside app.py with the .se1 files.")
+            st.info(
+                "Make sure the `ephe/` folder is present alongside app.py with the .se1 files."
+            )
