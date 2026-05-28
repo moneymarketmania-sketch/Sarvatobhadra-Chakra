@@ -413,7 +413,12 @@ if analyse_btn and symbol:
 
                 table_data = []
                 for pr in result.planet_results:
-                    hits_stock_str = "🎯 YES" if pr.hits_stock else "no"
+                    # FIX: Map correctly to engine attributes 'is_vedha_hit' and 'score_contribution'
+                    hits_stock_str = (
+                        "🎯 YES" if getattr(pr, "is_vedha_hit", False) else "no"
+                    )
+                    score_contrib = getattr(pr, "score_contribution", 0.0)
+
                     table_data.append(
                         {
                             "Planet": pr.planet,
@@ -421,7 +426,7 @@ if analyse_btn and symbol:
                             "Motion Speed": f"{pr.speed:.2f}°/d",
                             "Vedha Directions": "+".join(pr.vedha_directions),
                             "Hits Stock?": hits_stock_str,
-                            "SBC Weight": f"{pr.score_contribution:+.1f}",
+                            "SBC Weight": f"{score_contrib:+.1f}",
                         }
                     )
                 st.table(table_data)
