@@ -306,7 +306,7 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
     
     planets_spec = {
         "Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS, "Mercury": swe.MERCURY,
-        "Jupiter": swe.JUPITER, "Venus": swe.GUIDE_NAT_SUCC or swe.VENUS, "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE
+        "Jupiter": swe.JUPITER, "Venus": swe.VENUS, "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE
     }
     
     planet_positions = {}
