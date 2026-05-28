@@ -395,6 +395,31 @@ if analyse_btn and symbol:
                 scrolling=False,
             )
 
+            # ── Price Levels Dashboard UI ──────────────────────────────────────────────────
+            if result.price_levels:
+                st.subheader("🎯 SBC Algorithmic Support & Resistance Levels")
+
+                level_rows = []
+                for lv in result.price_levels:
+                    icon = (
+                        "🔴 Resistance"
+                        if lv["type"] == "resistance"
+                        else "🟢 Support" if lv["type"] == "support" else "🔵 Pivot/CMP"
+                    )
+                    level_rows.append(
+                        {
+                            "Type": icon,
+                            "Price Level": f"₹ {lv['price']:,.2f}",
+                            "Chakra Assignment": lv["label"],
+                            "Strength": lv["strength"].capitalize(),
+                            "Transiting Planets": (
+                                ", ".join(lv["planets"]) if lv["planets"] else "None"
+                            ),
+                            "Technical Note": lv["note"],
+                        }
+                    )
+                st.table(level_rows)
+
             # ── Commodity / Sector ────────────────────────────────────────────
             st.subheader("Commodity / Sector Relevance")
             st.write(
