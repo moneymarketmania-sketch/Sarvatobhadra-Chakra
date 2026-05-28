@@ -7,22 +7,68 @@ import yfinance as yf
 
 # ── MASTER DATA CONFIGURATIONS ───────────────────────────────────────────────
 NAKSHATRAS_28 = [
-    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashirsha", "Ardra",
-    "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
-    "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula",
-    "Purvashadha", "Uttarashadha", "Abhijit", "Shravana", "Dhanishta", "Shatabhisha",
-    "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+    "Ashwini",
+    "Bharani",
+    "Krittika",
+    "Rohini",
+    "Mrigashirsha",
+    "Ardra",
+    "Punarvasu",
+    "Pushya",
+    "Ashlesha",
+    "Magha",
+    "Purva Phalguni",
+    "Uttara Phalguni",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Vishakha",
+    "Anuradha",
+    "Jyeshtha",
+    "Mula",
+    "Purvashadha",
+    "Uttarashadha",
+    "Abhijit",
+    "Shravana",
+    "Dhanishta",
+    "Shatabhisha",
+    "Purva Bhadrapada",
+    "Uttara Bhadrapada",
+    "Revati",
 ]
 
 NAKSHATRAS = [
-    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashirsha", "Ardra",
-    "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
-    "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula",
-    "Purvashadha", "Uttarashadha", "Shravana", "Dhanishta", "Shatabhisha",
-    "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+    "Ashwini",
+    "Bharani",
+    "Krittika",
+    "Rohini",
+    "Mrigashirsha",
+    "Ardra",
+    "Punarvasu",
+    "Pushya",
+    "Ashlesha",
+    "Magha",
+    "Purva Phalguni",
+    "Uttara Phalguni",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Vishakha",
+    "Anuradha",
+    "Jyeshtha",
+    "Mula",
+    "Purvashadha",
+    "Uttarashadha",
+    "Shravana",
+    "Dhanishta",
+    "Shatabhisha",
+    "Purva Bhadrapada",
+    "Uttara Bhadrapada",
+    "Revati",
 ]
 
 NAK_SHORT = {i: name[:4] for i, name in enumerate(NAKSHATRAS_28)}
+
 
 def nak_index(name: str) -> int:
     if name in NAKSHATRAS_28:
@@ -31,6 +77,7 @@ def nak_index(name: str) -> int:
         idx = NAKSHATRAS.index(name)
         return idx + 1 if idx >= 21 else idx
     return -1
+
 
 # ── CORE 9×9 SARVATOBHADRA CHAKRA GEOMETRIC MATRIX REPRESENTATION ──────────
 SBC_GRID_CELLS = {}
@@ -134,6 +181,7 @@ SBC_GRID_CELLS[(8, 6)] = ("nak", "Jyeshtha")
 SBC_GRID_CELLS[(8, 7)] = ("nak", "Anuradha")
 SBC_GRID_CELLS[(8, 8)] = ("corner", "उ")
 
+
 # ── DATA OUTCOME CLASSES ──────────────────────────────────────────────────────
 @dataclasses.dataclass
 class PlanetResult:
@@ -145,6 +193,7 @@ class PlanetResult:
     is_vedha_hit: bool
     hits_stock: bool
     score_contribution: float
+
 
 @dataclasses.dataclass
 class SBCResult:
@@ -164,14 +213,15 @@ class SBCResult:
     stock_commodities: list
     sector_commodity_matches: list
 
+
 # ── HIGH PRECISION 28-NAKSHATRA GEOCENTRIC LONGITUDE MAPPER ──────────────────
 def get_nakshatra_28_by_lon(lon: float) -> str:
     lon = lon % 360.0
-    us_start = 266.666667   # 266°40'
+    us_start = 266.666667  # 266°40'
     us_cutoff = 276.666667  # 276°40'
     ab_cutoff = 280.894444  # 280°53'40"
-    sh_end = 293.333333    # 293°20'
-    
+    sh_end = 293.333333  # 293°20'
+
     if lon < us_start:
         idx = int(lon / (360.0 / 27.0))
         return NAKSHATRAS_28[idx]
@@ -188,6 +238,7 @@ def get_nakshatra_28_by_lon(lon: float) -> str:
             return NAKSHATRAS_28[min(idx + 1, 27)]
         return NAKSHATRAS_28[min(idx, 27)]
 
+
 # ── GEOMETRIC PATH RAY CASTING VECTOR ENGINE ─────────────────────────────────
 def get_cell_coord_by_nak(nak_name: str):
     for coord, (layer, text) in SBC_GRID_CELLS.items():
@@ -195,192 +246,368 @@ def get_cell_coord_by_nak(nak_name: str):
             return coord
     return None
 
+
 def cast_sbc_vector_ray(r: int, c: int, direction_type: str) -> list:
     if r == 0:  # Top Edge
-        if direction_type == "front": dr, dc = 1, 0
-        elif direction_type == "left": dr, dc = 1, -1
-        else: dr, dc = 1, 1
+        if direction_type == "front":
+            dr, dc = 1, 0
+        elif direction_type == "left":
+            dr, dc = 1, -1
+        else:
+            dr, dc = 1, 1
     elif r == 8:  # Bottom Edge
-        if direction_type == "front": dr, dc = -1, 0
-        elif direction_type == "left": dr, dc = -1, 1
-        else: dr, dc = -1, -1
+        if direction_type == "front":
+            dr, dc = -1, 0
+        elif direction_type == "left":
+            dr, dc = -1, 1
+        else:
+            dr, dc = -1, -1
     elif c == 0:  # Left Edge
-        if direction_type == "front": dr, dc = 0, 1
-        elif direction_type == "left": dr, dc = 1, 1
-        else: dr, dc = -1, 1
+        if direction_type == "front":
+            dr, dc = 0, 1
+        elif direction_type == "left":
+            dr, dc = 1, 1
+        else:
+            dr, dc = -1, 1
     elif c == 8:  # Right Edge
-        if direction_type == "front": dr, dc = 0, -1
-        elif direction_type == "left": dr, dc = -1, -1
-        else: dr, dc = 1, -1
+        if direction_type == "front":
+            dr, dc = 0, -1
+        elif direction_type == "left":
+            dr, dc = -1, -1
+        else:
+            dr, dc = 1, -1
     else:
         return []
 
     pierced_cells = []
     curr_r, curr_c = r, c
-    
+
     for _ in range(18):
         curr_r += dr
         curr_c += dc
-        
+
         if curr_r < 0:
-            curr_r = -curr_r; dr = -dr
+            curr_r = -curr_r
+            dr = -dr
         elif curr_r > 8:
-            curr_r = 16 - curr_r; dr = -dr
-            
+            curr_r = 16 - curr_r
+            dr = -dr
+
         if curr_c < 0:
-            curr_c = -curr_c; dc = -dc
+            curr_c = -curr_c
+            dc = -dc
         elif curr_c > 8:
-            curr_c = 16 - curr_c; dc = -dc
-            
+            curr_c = 16 - curr_c
+            dc = -dc
+
         if (curr_r, curr_c) == (r, c):
             break
-            
+
         cell = SBC_GRID_CELLS.get((curr_r, curr_c))
         if cell:
             layer, text = cell
-            pierced_cells.append({"coord": (curr_r, curr_c), "layer": layer, "text": text})
+            pierced_cells.append(
+                {"coord": (curr_r, curr_c), "layer": layer, "text": text}
+            )
             if layer in ["nak", "corner"] and (curr_r in [0, 8] or curr_c in [0, 8]):
                 break
-                
+
     return pierced_cells
+
 
 # ── COMPREHENSIVE PANCHAKA PROPERTY EXTRACTORS ───────────────────────────────
 def derive_phonetic_components(symbol: str) -> tuple[str, str]:
-    """ Maps standard alphanumeric characters to classical grid-supported Sanskrit sounds. """
-    first_char = symbol.strip().upper()[0] if symbol else 'N'
-    
+    """Maps standard alphanumeric characters to classical grid-supported Sanskrit sounds."""
+    first_char = symbol.strip().upper()[0] if symbol else "N"
+
     char_to_akshara = {
-        'A': 'अ', 'B': 'क', 'C': 'च', 'D': 'द', 'E': 'ए', 'F': 'ख', 'G': 'ग', 'H': 'घ',
-        'I': 'इ', 'J': 'ज', 'K': 'क', 'L': 'त', 'M': 'ङ', 'N': 'न', 'O': 'ओ', 'P': 'ध',
-        'Q': 'छ', 'R': 'झ', 'S': 'छ', 'T': 'त', 'U': 'ऊ', 'V': 'ञ', 'W': 'थ', 'X': 'ढ',
-        'Y': 'ञ', 'Z': 'झ'
+        "A": "अ",
+        "B": "क",
+        "C": "च",
+        "D": "द",
+        "E": "ए",
+        "F": "ख",
+        "G": "ग",
+        "H": "घ",
+        "I": "इ",
+        "J": "ज",
+        "K": "क",
+        "L": "त",
+        "M": "ङ",
+        "N": "न",
+        "O": "ओ",
+        "P": "ध",
+        "Q": "छ",
+        "R": "झ",
+        "S": "छ",
+        "T": "त",
+        "U": "ऊ",
+        "V": "ञ",
+        "W": "थ",
+        "X": "ढ",
+        "Y": "ञ",
+        "Z": "झ",
     }
-    
-    akshara = char_to_akshara.get(first_char, 'न')
-    
+
+    akshara = char_to_akshara.get(first_char, "न")
+
     # Derives stock structural alignment Rashi map
     char_to_rashi = {
-        'A': 'Mesha', 'B': 'Vrishabha', 'C': 'Mithuna', 'D': 'Karka', 'E': 'Simha', 
-        'F': 'Kanya', 'G': 'Tula', 'H': 'Vrishchika', 'I': 'Dhanu', 'J': 'Makara',
-        'K': 'Kumbha', 'L': 'Meena', 'M': 'Mesha', 'N': 'Vrishabha', 'O': 'Mithuna',
-        'P': 'Karka', 'Q': 'Simha', 'R': 'Kanya', 'S': 'Tula', 'T': 'Vrishchika',
-        'U': 'Dhanu', 'V': 'Makara', 'W': 'Kumbha', 'X': 'Meena', 'Y': 'Mesha', 'Z': 'Vrishabha'
+        "A": "Mesha",
+        "B": "Vrishabha",
+        "C": "Mithuna",
+        "D": "Karka",
+        "E": "Simha",
+        "F": "Kanya",
+        "G": "Tula",
+        "H": "Vrishchika",
+        "I": "Dhanu",
+        "J": "Makara",
+        "K": "Kumbha",
+        "L": "Meena",
+        "M": "Mesha",
+        "N": "Vrishabha",
+        "O": "Mithuna",
+        "P": "Karka",
+        "Q": "Simha",
+        "R": "Kanya",
+        "S": "Tula",
+        "T": "Vrishchika",
+        "U": "Dhanu",
+        "V": "Makara",
+        "W": "Kumbha",
+        "X": "Meena",
+        "Y": "Mesha",
+        "Z": "Vrishabha",
     }
-    return akshara, char_to_rashi.get(first_char, 'Mesha')
+    return akshara, char_to_rashi.get(first_char, "Mesha")
+
 
 def derive_phonetic_stock_nak(symbol: str) -> str:
     phonetic_map = {
-        'A': "Ashwini", 'B': "Bharani", 'K': "Krittika", 'R': "Rohini", 'M': "Mrigashirsha",
-        'F': "Ardra", 'P': "Punarvasu", 'Q': "Pushya", 'X': "Ashlesha", 'G': "Magha",
-        'E': "Purva Phalguni", 'U': "Uttara Phalguni", 'H': "Hasta", 'C': "Chitra", 'S': "Swati",
-        'V': "Vishakha", 'W': "Anuradha", 'J': "Jyeshtha", 'O': "Mula", 'Y': "Purvashadha",
-        'Z': "Uttarashadha", 'I': "Abhijit", 'L': "Shravana", 'D': "Dhanishta", 'T': "Shatabhisha",
-        'N': "Purva Bhadrapada", 'Fixed': "Uttara Bhadrapada", 'Index': "Revati"
+        "A": "Ashwini",
+        "B": "Bharani",
+        "K": "Krittika",
+        "R": "Rohini",
+        "M": "Mrigashirsha",
+        "F": "Ardra",
+        "P": "Punarvasu",
+        "Q": "Pushya",
+        "X": "Ashlesha",
+        "G": "Magha",
+        "E": "Purva Phalguni",
+        "U": "Uttara Phalguni",
+        "H": "Hasta",
+        "C": "Chitra",
+        "S": "Swati",
+        "V": "Vishakha",
+        "W": "Anuradha",
+        "J": "Jyeshtha",
+        "O": "Mula",
+        "Y": "Purvashadha",
+        "Z": "Uttarashadha",
+        "I": "Abhijit",
+        "L": "Shravana",
+        "D": "Dhanishta",
+        "T": "Shatabhisha",
+        "N": "Purva Bhadrapada",
+        "Fixed": "Uttara Bhadrapada",
+        "Index": "Revati",
     }
-    first_char = symbol.strip().upper()[0] if symbol else 'N'
+    first_char = symbol.strip().upper()[0] if symbol else "N"
     return phonetic_map.get(first_char, "Rohini")
 
+
 def get_vara_string_by_date(dt: datetime) -> str:
-    """ Maps Python datetime weekdays precisely onto SBC Grid cell values. """
+    """Maps Python datetime weekdays precisely onto SBC Grid cell values."""
     weekday_map = {
-        0: "☽ Mon", 1: "♂ Tue", 2: " बुध Wed", 3: " गुरु Thu", 4: " शुक्र Fri", 5: " शनि Sat", 6: "☉ Sun"
+        0: "☽ Mon",
+        1: "♂ Tue",
+        2: " बुध Wed",
+        3: " गुरु Thu",
+        4: " शुक्र Fri",
+        5: " शनि Sat",
+        6: "☉ Sun",
     }
     # Standardize names to match the manual grid configuration patterns exactly
     day_idx = dt.weekday()
-    if day_idx == 0: return "☽ Mon"
-    elif day_idx == 1: return "♂ Tue"
-    elif day_idx == 6: return "☉ Sun"
+    if day_idx == 0:
+        return "☽ Mon"
+    elif day_idx == 1:
+        return "♂ Tue"
+    elif day_idx == 6:
+        return "☉ Sun"
     return weekday_map.get(day_idx, "")
 
+
 def get_tithi_string_by_idx(tithi_raw: int) -> str:
-    if 1 <= tithi_raw <= 6: return "T1-6\nPratipada"
-    elif 7 <= tithi_raw <= 12: return "T7-12\nSaptami"
-    elif 13 <= tithi_raw <= 18: return "T13-18\nTrayodashi"
-    elif 19 <= tithi_raw <= 24: return "T19-24\nNavami"
-    else: return "T25-30\nPanchami"
+    if 1 <= tithi_raw <= 6:
+        return "T1-6\nPratipada"
+    elif 7 <= tithi_raw <= 12:
+        return "T7-12\nSaptami"
+    elif 13 <= tithi_raw <= 18:
+        return "T13-18\nTrayodashi"
+    elif 19 <= tithi_raw <= 24:
+        return "T19-24\nNavami"
+    else:
+        return "T25-30\nPanchami"
+
 
 # ── MAIN ANALYSIS CORE FUNCTION ──────────────────────────────────────────────
-def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_method: str, manual_nak: str = None) -> SBCResult:
+def analyse_symbol(
+    symbol: str,
+    sector: str,
+    ephe_path: str,
+    dt: datetime,
+    nak_method: str,
+    manual_nak: str = None,
+) -> SBCResult:
     # 1. Initialization and Path Validation
     if not os.path.isabs(ephe_path):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         ephe_path = os.path.join(base_dir, ephe_path)
-    
-    if not os.path.exists(ephe_path) or not any(f.endswith('.se1') for f in os.listdir(ephe_path)):
-        raise FileNotFoundError(f"CRITICAL: Ephemeris missing at: {ephe_path}.")
-        
+
+    if not os.path.exists(ephe_path) or not any(
+        f.endswith(".se1") for f in os.listdir(ephe_path)
+    ):
+        raise FileNotFoundError(f"CRITICAL: Ephemeris path empty at: {ephe_path}.")
+
     swe.set_ephe_path(ephe_path)
-    
-    # 2. Determine Focal Panchaka Signatures
-    stock_nak = manual_nak if (nak_method == "manual" and manual_nak) else derive_phonetic_stock_nak(symbol)
+
+    # 2. Focal Panchaka Identity
+    stock_nak = (
+        manual_nak
+        if (nak_method == "manual" and manual_nak)
+        else derive_phonetic_stock_nak(symbol)
+    )
     stock_akshara, stock_rashi = derive_phonetic_components(symbol)
     today_vara = get_vara_string_by_date(dt)
     st_r, st_c = get_cell_coord_by_nak(stock_nak) or (0, 2)
-    
-    # 3. Extract Planetary Positions with Speed Flags
-    jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60.0 + dt.second/3600.0)
-    planets_spec = {"Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS, "Mercury": swe.MERCURY,
-                    "Jupiter": swe.JUPITER, "Venus": swe.VENUS, "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE}
-    
+
+    # 3. Precise Planetary Ephemeris with State Flags
+    jd = swe.julday(
+        dt.year, dt.month, dt.day, dt.hour + dt.minute / 60.0 + dt.second / 3600.0
+    )
+    planets_spec = {
+        "Sun": swe.SUN,
+        "Moon": swe.MOON,
+        "Mars": swe.MARS,
+        "Mercury": swe.MERCURY,
+        "Jupiter": swe.JUPITER,
+        "Venus": swe.VENUS,
+        "Saturn": swe.SATURN,
+        "Rahu": swe.MEAN_NODE,
+    }
+
     planet_positions = {}
     for p_name, p_id in planets_spec.items():
         res, _ = swe.calc_ut(jd, p_id, swe.FLG_SPEED)
         lon, speed = res[0], res[3]
-        # Atichari defined as speed > 1.5 standard deviation threshold
-        planet_positions[p_name] = {"lon": lon, "speed": speed, "is_retro": speed < 0, "is_atichari": speed > 1.5}
-    
-    # Add Ketu Logic
+        # Dynamic State Detection
+        planet_positions[p_name] = {
+            "lon": lon,
+            "speed": speed,
+            "is_retro": speed < 0,
+            "is_atichari": speed > 1.5,
+        }
+
+    # Ketu logic
     rahu_lon = planet_positions["Rahu"]["lon"]
-    planet_positions["Ketu"] = {"lon": (rahu_lon + 180.0) % 360.0, "speed": planet_positions["Rahu"]["speed"], "is_retro": True, "is_atichari": False}
-    
-    # 4. Temporal Data (Tithi/Paksha)
+    planet_positions["Ketu"] = {
+        "lon": (rahu_lon + 180.0) % 360.0,
+        "speed": planet_positions["Rahu"]["speed"],
+        "is_retro": True,
+        "is_atichari": False,
+    }
+
+    # 4. Temporal Context
     diff = (planet_positions["Moon"]["lon"] - planet_positions["Sun"]["lon"]) % 360.0
     tithi_raw = int(diff / 12.0) + 1
     paksha = "Shukla" if tithi_raw <= 15 else "Krishna"
     target_tithi_str = get_tithi_string_by_idx(tithi_raw)
-    
-    # 5. Multi-Layer Collision Processing
+
+    # 5. Multi-Layer Collision Engine
     planet_results = []
     bullish_count, bearish_count = 0, 0
-    
+
     for p_name, data in planet_positions.items():
-        # Dynamic Vedha Direction Selection
+        # Dynamic Vedha Direction Selection (Rules-Based)
         if p_name in ["Sun", "Moon", "Rahu", "Ketu"]:
             dirs = ["front", "left", "right"]
         else:
-            if data["is_retro"]: dirs = ["right"]
-            elif data["is_atichari"]: dirs = ["front"]
-            else: dirs = ["left"]
-            
+            if data["is_retro"]:
+                dirs = ["right"]
+            elif data["is_atichari"]:
+                dirs = ["front"]
+            else:
+                dirs = ["left"]
+
         p_nak = get_nakshatra_28_by_lon(data["lon"])
         p_coord = get_cell_coord_by_nak(p_nak)
-        
-        # Rule: Moon Malefic/Benefic Status & Strength Modifiers
-        moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
-        is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (p_name == "Moon" and moon_malefic_paksha)
-        is_weak = abs(data["lon"] - planet_positions["Sun"]["lon"]) < 8.0 # Combustion check
+
+        # Dignity & Paksha Modifiers
+        moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (
+            paksha == "Shukla" and tithi_raw <= 5
+        )
+        is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (
+            p_name == "Moon" and moon_malefic_paksha
+        )
+        is_weak = (
+            abs(data["lon"] - planet_positions["Sun"]["lon"]) < 8.0
+        )  # Combustion check
         multiplier = 0.5 if is_weak else 1.0
-        
+
+        # Ray Casting Hit Detection
         hits_stock = False
         if p_coord:
             for d in dirs:
                 for rc in cast_sbc_vector_ray(p_coord[0], p_coord[1], d):
-                    if (rc["layer"] == "nak" and rc["text"].lower() == stock_nak.lower()) or \
-                       (rc["layer"] == "vowel" and rc["text"] == stock_akshara) or \
-                       (rc["layer"] == "rashi" and stock_rashi.lower() in rc["text"].lower()) or \
-                       (rc["layer"] == "tithi" and rc["text"] == target_tithi_str) or \
-                       (rc["layer"] == "vara" and rc["text"] == today_vara):
+                    if (
+                        (
+                            rc["layer"] == "nak"
+                            and rc["text"].lower() == stock_nak.lower()
+                        )
+                        or (rc["layer"] == "vowel" and rc["text"] == stock_akshara)
+                        or (
+                            rc["layer"] == "rashi"
+                            and stock_rashi.lower() in rc["text"].lower()
+                        )
+                        or (rc["layer"] == "tithi" and rc["text"] == target_tithi_str)
+                        or (rc["layer"] == "vara" and rc["text"] == today_vara)
+                    ):
                         hits_stock = True
-                        
-        score_contrib = (12.5 * multiplier) if (hits_stock and is_malefic) else (-12.5 * multiplier if hits_stock else 0)
+
+        score_contrib = (
+            (12.5 * multiplier)
+            if (hits_stock and is_malefic)
+            else (-12.5 * multiplier if hits_stock else 0)
+        )
         if hits_stock:
-            if is_malefic: bullish_count += 1
-            else: bearish_count += 1
-                
-        planet_results.append(PlanetResult(p_name, p_nak, data["speed"], dirs, dirs, hits_stock, hits_stock, score_contrib))
-        
-    # 6. Scoring and Price Consolidation
-    sbc_score = int((bullish_count / (bullish_count + bearish_count)) * 100) if (bullish_count + bearish_count) > 0 else 50
+            if is_malefic:
+                bullish_count += 1
+            else:
+                bearish_count += 1
+
+        planet_results.append(
+            PlanetResult(
+                p_name,
+                p_nak,
+                data["speed"],
+                dirs,
+                dirs,
+                hits_stock,
+                hits_stock,
+                score_contrib,
+            )
+        )
+
+    # 6. Consolidation (Score/Levels)
+    sbc_score = (
+        int((bullish_count / (bullish_count + bearish_count)) * 100)
+        if (bullish_count + bearish_count) > 0
+        else 50
+    )
+
     # ── 6. DYNAMIC ALGORITHMIC PRICE SUPPORT & RESISTANCE LEVELS ────────────────
     # Fetch CMP
     try:
@@ -392,29 +619,89 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
         cmp = 22450.00 if "NIFTY" in symbol else 2450.00
 
     # Categorize planets hitting the stock for this specific date
-    malefic_hitting = [pr.planet for pr in planet_results if pr.is_vedha_hit and pr.planet in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"]]
-    benefic_hitting = [pr.planet for pr in planet_results if pr.is_vedha_hit and pr.planet not in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"]]
+    malefic_hitting = [
+        pr.planet
+        for pr in planet_results
+        if pr.is_vedha_hit and pr.planet in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"]
+    ]
+    benefic_hitting = [
+        pr.planet
+        for pr in planet_results
+        if pr.is_vedha_hit
+        and pr.planet not in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"]
+    ]
 
     # Calculate dynamic volatility buffer: The more planets hitting, the wider the price levels
     hit_count = len([pr for pr in planet_results if pr.is_vedha_hit])
-    vol_buffer = 0.005 + (hit_count * 0.003) 
+    vol_buffer = 0.005 + (hit_count * 0.003)
 
     # Generate the dynamic levels
     price_levels = [
-        {"type": "resistance", "price": cmp * (1 + vol_buffer * 2), "label": "R2 Structural Matrix Peak", "strength": "strong", "planets": malefic_hitting[:2], "note": "Dynamic range expansion."},
-        {"type": "resistance", "price": cmp * (1 + vol_buffer), "label": "R1 Concentric Layer Target", "strength": "moderate", "planets": malefic_hitting[2:4], "note": "Primary transit ceiling."},
-        {"type": "pivot", "price": cmp, "label": "SBC Matrix Baseline CMP", "strength": "neutral", "planets": [], "note": "Baseline equilibrium."},
-        {"type": "support", "price": cmp * (1 - vol_buffer), "label": "S1 Concentric Layer Floor", "strength": "moderate", "planets": benefic_hitting[:2], "note": "Primary support floor."},
-        {"type": "support", "price": cmp * (1 - vol_buffer * 2), "label": "S2 Classical Panchaka Floor", "strength": "strong", "planets": benefic_hitting[2:4], "note": "Dynamic convergence floor."}
+        {
+            "type": "resistance",
+            "price": cmp * (1 + vol_buffer * 2),
+            "label": "R2 Structural Matrix Peak",
+            "strength": "strong",
+            "planets": malefic_hitting[:2],
+            "note": "Dynamic range expansion.",
+        },
+        {
+            "type": "resistance",
+            "price": cmp * (1 + vol_buffer),
+            "label": "R1 Concentric Layer Target",
+            "strength": "moderate",
+            "planets": malefic_hitting[2:4],
+            "note": "Primary transit ceiling.",
+        },
+        {
+            "type": "pivot",
+            "price": cmp,
+            "label": "SBC Matrix Baseline CMP",
+            "strength": "neutral",
+            "planets": [],
+            "note": "Baseline equilibrium.",
+        },
+        {
+            "type": "support",
+            "price": cmp * (1 - vol_buffer),
+            "label": "S1 Concentric Layer Floor",
+            "strength": "moderate",
+            "planets": benefic_hitting[:2],
+            "note": "Primary support floor.",
+        },
+        {
+            "type": "support",
+            "price": cmp * (1 - vol_buffer * 2),
+            "label": "S2 Classical Panchaka Floor",
+            "strength": "strong",
+            "planets": benefic_hitting[2:4],
+            "note": "Dynamic convergence floor.",
+        },
     ]
-    
-    stock_commodities = ["Gold", "Silver", "Crude Oil"] if "Financial" in sector or "NIFTY" in symbol else ["Steel", "Base Metals", "Copper"]
-    sector_matches = [c for c in stock_commodities if c in ["Gold", "Silver", "Steel", "Copper"]]
-    
+
+    stock_commodities = (
+        ["Gold", "Silver", "Crude Oil"]
+        if "Financial" in sector or "NIFTY" in symbol
+        else ["Steel", "Base Metals", "Copper"]
+    )
+    sector_matches = [
+        c for c in stock_commodities if c in ["Gold", "Silver", "Steel", "Copper"]
+    ]
+
     return SBCResult(
-        sbc_score=sbc_score, sbc_label=sbc_label, stock_nak=stock_nak,
-        tithi=tithi_raw, paksha=paksha, bullish_count=bullish_count, bearish_count=bearish_count,
-        vedha_front_nak=v_front, vedha_left_nak=v_left, vedha_right_nak=v_right,
-        moon_malefic_paksha=moon_malefic_paksha, planet_results=planet_results,
-        price_levels=price_levels, stock_commodities=stock_commodities, sector_commodity_matches=sector_matches
+        sbc_score=sbc_score,
+        sbc_label=sbc_label,
+        stock_nak=stock_nak,
+        tithi=tithi_raw,
+        paksha=paksha,
+        bullish_count=bullish_count,
+        bearish_count=bearish_count,
+        vedha_front_nak=v_front,
+        vedha_left_nak=v_left,
+        vedha_right_nak=v_right,
+        moon_malefic_paksha=moon_malefic_paksha,
+        planet_results=planet_results,
+        price_levels=price_levels,
+        stock_commodities=stock_commodities,
+        sector_commodity_matches=sector_matches,
     )
