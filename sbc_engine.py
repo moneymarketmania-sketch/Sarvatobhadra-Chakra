@@ -301,135 +301,86 @@ def get_tithi_string_by_idx(tithi_raw: int) -> str:
 
 # ── MAIN ANALYSIS CORE FUNCTION ──────────────────────────────────────────────
 def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_method: str, manual_nak: str = None) -> SBCResult:
-    # SECURE ROUTING SYSTEM: Enforce validation to prevent silent falling back to low precision
+    # 1. Initialization and Path Validation
     if not os.path.isabs(ephe_path):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         ephe_path = os.path.join(base_dir, ephe_path)
     
     if not os.path.exists(ephe_path) or not any(f.endswith('.se1') for f in os.listdir(ephe_path)):
-        raise FileNotFoundError(
-            f"CRITICAL: Ephemeris path directory is missing or empty at: {ephe_path}. "
-            "SBC calculations require valid .se1 ephemeris assets."
-        )
+        raise FileNotFoundError(f"CRITICAL: Ephemeris missing at: {ephe_path}.")
         
     swe.set_ephe_path(ephe_path)
     
-    # 1. Determine focal stock Panchaka signatures
-    if nak_method == "manual" and manual_nak:
-        stock_nak = manual_nak
-    elif nak_method == "listing_date":
-        stock_nak = "Swati"
-    else:
-        stock_nak = derive_phonetic_stock_nak(symbol)
-        
+    # 2. Determine Focal Panchaka Signatures
+    stock_nak = manual_nak if (nak_method == "manual" and manual_nak) else derive_phonetic_stock_nak(symbol)
     stock_akshara, stock_rashi = derive_phonetic_components(symbol)
     today_vara = get_vara_string_by_date(dt)
+    st_r, st_c = get_cell_coord_by_nak(stock_nak) or (0, 2)
     
-    # Find stock coordinate location inside our 2D grid matrix
-    stock_coord = get_cell_coord_by_nak(stock_nak)
-    st_r, st_c = stock_coord if stock_coord else (0, 2)
-    
-    f_ray = cast_sbc_vector_ray(st_r, st_c, "front")
-    l_ray = cast_sbc_vector_ray(st_r, st_c, "left")
-    r_ray = cast_sbc_vector_ray(st_r, st_c, "right")
-    
-    v_front = next((x["text"] for x in f_ray if x["layer"] == "nak"), "Krittika")
-    v_left  = next((x["text"] for x in l_ray if x["layer"] == "nak"), "Bharani")
-    v_right = next((x["text"] for x in r_ray if x["layer"] == "nak"), "Ashwini")
-    
-    # 2. Extract precise Planetary Positions via Swiss Ephemeris
+    # 3. Extract Planetary Positions with Speed Flags
     jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60.0 + dt.second/3600.0)
-    
-    planets_spec = {
-        "Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS, "Mercury": swe.MERCURY,
-        "Jupiter": swe.JUPITER, "Venus": swe.VENUS, "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE
-    }
+    planets_spec = {"Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS, "Mercury": swe.MERCURY,
+                    "Jupiter": swe.JUPITER, "Venus": swe.VENUS, "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE}
     
     planet_positions = {}
     for p_name, p_id in planets_spec.items():
-        res, _ = swe.calc_ut(jd, p_id)
-        lon = res[0]
-        speed = res[3]
-        planet_positions[p_name] = {"lon": lon, "speed": speed}
-        
-    rahu_lon = planet_positions["Rahu"]["lon"]
-    planet_positions["Ketu"] = {"lon": (rahu_lon + 180.0) % 360.0, "speed": planet_positions["Rahu"]["speed"]}
+        res, _ = swe.calc_ut(jd, p_id, swe.FLG_SPEED)
+        lon, speed = res[0], res[3]
+        # Atichari defined as speed > 1.5 standard deviation threshold
+        planet_positions[p_name] = {"lon": lon, "speed": speed, "is_retro": speed < 0, "is_atichari": speed > 1.5}
     
-    # 3. Process Tithi / Temporal Timing parameters
-    sun_lon = planet_positions["Sun"]["lon"]
-    moon_lon = planet_positions["Moon"]["lon"]
-    diff = (moon_lon - sun_lon) % 360.0
+    # Add Ketu Logic
+    rahu_lon = planet_positions["Rahu"]["lon"]
+    planet_positions["Ketu"] = {"lon": (rahu_lon + 180.0) % 360.0, "speed": planet_positions["Rahu"]["speed"], "is_retro": True, "is_atichari": False}
+    
+    # 4. Temporal Data (Tithi/Paksha)
+    diff = (planet_positions["Moon"]["lon"] - planet_positions["Sun"]["lon"]) % 360.0
     tithi_raw = int(diff / 12.0) + 1
     paksha = "Shukla" if tithi_raw <= 15 else "Krishna"
-    
     target_tithi_str = get_tithi_string_by_idx(tithi_raw)
-    moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
     
-    # 4. Multi-Layer Collision Processing
+    # 5. Multi-Layer Collision Processing
     planet_results = []
-    bullish_count = 0
-    bearish_count = 0
+    bullish_count, bearish_count = 0, 0
     
     for p_name, data in planet_positions.items():
-        p_nak = get_nakshatra_28_by_lon(data["lon"])
-        p_coord = get_cell_coord_by_nak(p_nak)
-        is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (p_name == "Moon" and moon_malefic_paksha)
-        
+        # Dynamic Vedha Direction Selection
         if p_name in ["Sun", "Moon", "Rahu", "Ketu"]:
             dirs = ["front", "left", "right"]
         else:
-            if data["speed"] < 0:
-                dirs = ["left"]
-            elif data["speed"] > 1.25:
-                dirs = ["right"]
-            else:
-                dirs = ["front"]
-                
+            if data["is_retro"]: dirs = ["right"]
+            elif data["is_atichari"]: dirs = ["front"]
+            else: dirs = ["left"]
+            
+        p_nak = get_nakshatra_28_by_lon(data["lon"])
+        p_coord = get_cell_coord_by_nak(p_nak)
+        
+        # Rule: Moon Malefic/Benefic Status & Strength Modifiers
+        moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
+        is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (p_name == "Moon" and moon_malefic_paksha)
+        is_weak = abs(data["lon"] - planet_positions["Sun"]["lon"]) < 8.0 # Combustion check
+        multiplier = 0.5 if is_weak else 1.0
+        
         hits_stock = False
         if p_coord:
             for d in dirs:
-                ray_cells = cast_sbc_vector_ray(p_coord[0], p_coord[1], d)
-                for rc in ray_cells:
-                    # Layer 1: Stellar Alignment
-                    if rc["layer"] == "nak" and rc["text"].lower() == stock_nak.lower():
-                        hits_stock = True
-                    # Layer 2: Phonetic Identity Alignment
-                    elif rc["layer"] == "vowel" and rc["text"] == stock_akshara:
-                        hits_stock = True
-                    # Layer 3: Rashi Alignment (FIXED BUG)
-                    elif rc["layer"] == "rashi" and stock_rashi.lower() in rc["text"].lower():
-                        hits_stock = True
-                    # Layer 4: Timing Window Intersections
-                    elif rc["layer"] == "tithi" and rc["text"] == target_tithi_str:
-                        hits_stock = True
-                    elif rc["layer"] == "vara" and today_vara and rc["text"] == today_vara:
+                for rc in cast_sbc_vector_ray(p_coord[0], p_coord[1], d):
+                    if (rc["layer"] == "nak" and rc["text"].lower() == stock_nak.lower()) or \
+                       (rc["layer"] == "vowel" and rc["text"] == stock_akshara) or \
+                       (rc["layer"] == "rashi" and stock_rashi.lower() in rc["text"].lower()) or \
+                       (rc["layer"] == "tithi" and rc["text"] == target_tithi_str) or \
+                       (rc["layer"] == "vara" and rc["text"] == today_vara):
                         hits_stock = True
                         
-        score_contrib = 0.0
+        score_contrib = (12.5 * multiplier) if (hits_stock and is_malefic) else (-12.5 * multiplier if hits_stock else 0)
         if hits_stock:
-            if is_malefic:
-                score_contrib = +12.5
-                bullish_count += 1
-            else:
-                score_contrib = -12.5
-                bearish_count += 1
+            if is_malefic: bullish_count += 1
+            else: bearish_count += 1
                 
-        planet_results.append(PlanetResult(
-            planet=p_name, planet_nak=p_nak, motion_speed=data["speed"],
-            vedha_directions=dirs, active_directions=dirs,
-            is_vedha_hit=hits_stock, hits_stock=hits_stock, score_contribution=score_contrib
-        ))
+        planet_results.append(PlanetResult(p_name, p_nak, data["speed"], dirs, dirs, hits_stock, hits_stock, score_contrib))
         
-    # 5. Core Mathematical Score Consolidation
-    total_signals = bullish_count + bearish_count
-    if total_signals > 0:
-        sbc_score = int((bullish_count / total_signals) * 100)
-    else:
-        sbc_score = 50
-        
-    sbc_label = "Bullish Reversal" if sbc_score > 60 else "Bearish Pressure" if sbc_score < 40 else "Neutral Pivot"
-    
-    # ── 6. DYNAMIC ALGORITHMIC PRICE SUPPORT & RESISTANCE LEVELS ────────────────
+    # 6. Scoring and Price Consolidation
+    sbc_score = int((bullish_count / (bullish_count + bearish_count)) * 100) if (bullish_count + bearish_count) > 0 else 50
     # ── 6. DYNAMIC ALGORITHMIC PRICE SUPPORT & RESISTANCE LEVELS ────────────────
     # Fetch CMP
     try:
