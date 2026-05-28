@@ -414,26 +414,17 @@ if analyse_btn and symbol:
                 for pr in result.planet_results:
                     nak_name = pr.planet_nak
                     p_label = pr.planet
-
+                    
                     # Convert raw names to standard Vedic glyph formats for the perimeter view
-                    if p_label == "Sun":
-                        p_label = "☉ Sun"
-                    elif p_label == "Moon":
-                        p_label = "☽ Mon"
-                    elif p_label == "Mars":
-                        p_label = "♂ Tue"
-                    elif p_label == "Mercury":
-                        p_label = "☿ Wed"
-                    elif p_label == "Jupiter":
-                        p_label = "♃ Thu"
-                    elif p_label == "Venus":
-                        p_label = "♀ Fri"
-                    elif p_label == "Saturn":
-                        p_label = "♄ Sat"
-                    elif p_label == "Rahu":
-                        p_label = "Rahu"
-                    elif p_label == "Ketu":
-                        p_label = "Ketu"
+                    if p_label == "Sun": p_label = "☉ Sun"
+                    elif p_label == "Moon": p_label = "☽ Mon"
+                    elif p_label == "Mars": p_label = "♂ Tue"
+                    elif p_label == "Mercury": p_label = "☿ Wed"
+                    elif p_label == "Jupiter": p_label = "♃ Thu"
+                    elif p_label == "Venus": p_label = "♀ Fri"
+                    elif p_label == "Saturn": p_label = "♄ Sat"
+                    elif p_label == "Rahu": p_label = "Rahu"
+                    elif p_label == "Ketu": p_label = "Ketu"
 
                     if nak_name not in transits_dict:
                         transits_dict[nak_name] = []
@@ -450,7 +441,7 @@ if analyse_btn and symbol:
                     tithi=result.tithi,
                     paksha=result.paksha,
                     vara_today=vara_today,
-                    planetary_transits=transits_dict,  # Safely passes the cleaned layout data
+                    planetary_transits=transits_dict  # Safely passes the cleaned layout data
                 ),
                 height=760,
                 scrolling=False,
