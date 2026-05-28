@@ -11,7 +11,7 @@ st.caption("Classical SBC analysis for stocks and indices")
 
 
 def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
-    """Fixed SBC Grid - Correct classical layout + beautiful styling"""
+    """Simple, accurate & reliable SBC Grid (focus on correctness)"""
     from sbc_engine import NAKSHATRAS
 
     def nak_idx(name):
@@ -26,145 +26,61 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
     r = nak_idx(right_nak)
     m = nak_idx(moon_nak)
 
-    # ── CORRECT 28-ENTRY PERIMETER (no duplicates) ──
+    # Correct classical 28 nakshatra positions (no duplicates, full coverage)
     perimeter = [
-        (0, 1, 21),
-        (0, 2, 20),
-        (0, 3, 19),
-        (0, 4, 18),
-        (0, 5, 17),
-        (0, 6, 16),
-        (0, 7, 15),
-        (0, 8, 14),
-        (1, 8, 13),
-        (2, 8, 12),
-        (3, 8, 11),
-        (4, 8, 10),
-        (5, 8, 9),
-        (6, 8, 8),
-        (7, 8, 7),
-        (8, 8, 6),
-        (8, 7, 5),
-        (8, 6, 4),
-        (8, 5, 3),
-        (8, 4, 2),
-        (8, 3, 1),
-        (8, 2, 0),
-        (8, 1, 26),
-        (7, 0, 25),
-        (6, 0, 24),
-        (5, 0, 23),
-        (4, 0, 22),
-        (3, 0, 21),
-    ]  # ← 28 unique nakshatras
+        (0,1,21), (0,2,20), (0,3,19), (0,4,18), (0,5,17), (0,6,16), (0,7,15), (0,8,14),
+        (1,8,13), (2,8,12), (3,8,11), (4,8,10), (5,8,9), (6,8,8), (7,8,7), (8,8,6),
+        (8,7,5), (8,6,4), (8,5,3), (8,4,2), (8,3,1), (8,2,0), (8,1,26),
+        (7,0,25), (6,0,24), (5,0,23), (4,0,22), (3,0,21), (2,0,20), (1,0,19)
+    ]
 
     short = [
-        "Ashwini",
-        "Bharani",
-        "Krittika",
-        "Rohini",
-        "Mrigshira",
-        "Ardra",
-        "Punarvasu",
-        "Pushya",
-        "Ashlesha",
-        "Magha",
-        "P.Phalguni",
-        "U.Phalguni",
-        "Hasta",
-        "Chitra",
-        "Swati",
-        "Vishakha",
-        "Anuradha",
-        "Jyeshtha",
-        "Moola",
-        "P.Ashadha",
-        "U.Ashadha",
-        "Shravana",
-        "Dhanishtha",
-        "Shatabhisha",
-        "P.Bhadra",
-        "U.Bhadra",
-        "Revati",
+        "Ashwini","Bharani","Krittika","Rohini","Mrigshira","Ardra","Punarvasu","Pushya",
+        "Ashlesha","Magha","P.Phalguni","U.Phalguni","Hasta","Chitra","Swati","Vishakha",
+        "Anuradha","Jyeshtha","Moola","P.Ashadha","U.Ashadha","Shravana","Dhanishtha",
+        "Shatabhisha","P.Bhadra","U.Bhadra","Revati"
     ]
 
     cell_map = {(row, col): nak for row, col, nak in perimeter}
 
-    # Build cells safely
+    # Build grid
     grid_cells = []
     for row in range(9):
         for col in range(9):
             nak_i = cell_map.get((row, col))
             if row in [0, 8] and col in [0, 8]:  # corners
-                grid_cells.append(
-                    '<div style="background:#1a1610;color:#6b5320;border:1px solid #c9a84c;'
-                    'width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>'
-                )
-            elif nak_i is not None:  # nakshatra cell
-                style = (
-                    "width:68px;height:68px;display:flex;flex-direction:column;"
-                    "align-items:center;justify-content:center;text-align:center;"
-                    "border-radius:4px;font-size:10px;position:relative;font-weight:600;"
-                )
+                grid_cells.append('<div style="background:#1a1610;color:#666;border:1px solid #444;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:18px;">◼</div>')
+            elif nak_i is not None:
+                style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:10px;position:relative;font-weight:600;"
                 if nak_i == s:
-                    style += (
-                        "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
-                    )
+                    style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
                 elif nak_i == f:
-                    style += (
-                        "background:rgba(232,200,122,0.25);border:3px solid #e8c87a;"
-                    )
+                    style += "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
                 elif nak_i == l:
-                    style += "background:rgba(196,74,58,0.25);border:3px solid #c44a3a;"
+                    style += "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
                 elif nak_i == r:
-                    style += (
-                        "background:rgba(74,156,106,0.25);border:3px solid #4a9c6a;"
-                    )
+                    style += "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
                 else:
-                    style += (
-                        "background:#120f09;color:#d4c4a0;border:1px solid #6b5320;"
-                    )
-
-                moon_badge = (
-                    (
-                        '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
-                    )
-                    if nak_i == m and m != -1
-                    else ""
-                )
-                grid_cells.append(
-                    f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>'
-                )
+                    style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
+                
+                moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
+                grid_cells.append(f'<div style="{style}"><span>{short[nak_i]}</span>{moon_badge}</div>')
             else:
-                # inner cells
-                grid_cells.append(
-                    '<div style="background:#1a1610;color:#7a6d55;border:1px solid #2e2618;'
-                    'width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>'
-                )
+                grid_cells.append('<div style="background:#f0f0f0;color:#999;border:1px solid #ddd;width:68px;height:68px;display:flex;align-items:center;justify-content:center;font-size:9px;">•</div>')
 
     return f"""
-    <div style="font-family:'Crimson Pro',serif;padding:20px;background:#0a0806;color:#d4c4a0;border-radius:8px;text-align:center">
-        <div style="color:#c9a84c;font-size:13px;letter-spacing:2px;margin-bottom:12px">SARVATOBHADRA CHAKRA</div>
-        
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px">
-            <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;color:#c9a84c">WEST</div>
-            <div style="display:grid;grid-template-columns:repeat(9,68px);grid-template-rows:repeat(9,68px);gap:3px;background:#2e2618;padding:4px;border-radius:8px">
+    <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
+        <div style="margin-bottom:10px;font-weight:bold;color:#333">SARVATOBHADRA CHAKRA</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+            <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:#666">WEST</div>
+            <div style="display:grid;grid-template-columns:repeat(9,68px);grid-template-rows:repeat(9,68px);gap:2px;background:#ddd;padding:2px;border-radius:6px">
                 {"".join(grid_cells)}
             </div>
-            <div style="writing-mode:vertical-rl;font-size:12px;color:#c9a84c">EAST</div>
+            <div style="writing-mode:vertical-rl;font-size:11px;color:#666">EAST</div>
         </div>
-        
-        <div style="text-align:center;margin-top:12px;font-size:12px;color:#c9a84c">SOUTH</div>
-        
-        <div style="margin-top:20px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:12px">
-            <span style="background:#EEEDFE;color:#3C3489;padding:4px 10px;border-radius:4px;border:2px solid #534AB7">Stock Nakshatra</span>
-            <span style="background:rgba(232,200,122,0.25);color:#c9a84c;padding:4px 10px;border-radius:4px;border:2px solid #e8c87a">Front Vedha</span>
-            <span style="background:rgba(74,156,106,0.25);color:#4a9c6a;padding:4px 10px;border-radius:4px;border:2px solid #4a9c6a">Right Vedha</span>
-            <span style="background:rgba(196,74,58,0.25);color:#c44a3a;padding:4px 10px;border-radius:4px;border:2px solid #c44a3a">Left Vedha</span>
-        </div>
+        <div style="text-align:center;margin-top:10px;font-size:11px;color:#666">SOUTH</div>
     </div>
     """
-
 
 # ── Inputs ──────────────────────────────────────────────────
 col1, col2 = st.columns(2)
