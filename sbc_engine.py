@@ -134,7 +134,6 @@ SBC_GRID_CELLS[(8, 6)] = ("nak", "Jyeshtha")
 SBC_GRID_CELLS[(8, 7)] = ("nak", "Anuradha")
 SBC_GRID_CELLS[(8, 8)] = ("corner", "उ")
 
-
 # ── DATA OUTCOME CLASSES ──────────────────────────────────────────────────────
 @dataclasses.dataclass
 class PlanetResult:
@@ -165,19 +164,12 @@ class SBCResult:
     stock_commodities: list
     sector_commodity_matches: list
 
-
 # ── HIGH PRECISION 28-NAKSHATRA GEOCENTRIC LONGITUDE MAPPER ──────────────────
 def get_nakshatra_28_by_lon(lon: float) -> str:
-    """
-    Maps continuous 0-360° longitudes precisely onto the 28-Nakshatra system,
-    isolating Abhijit inside the final quarter of Uttarashadha.
-    """
     lon = lon % 360.0
-    
-    # Uttarashadha custom slice setup
-    us_start = 266.666667  # 266°40'
-    us_cutoff = 276.666667 # 276°40'
-    ab_cutoff = 280.894444 # 280°53'40"
+    us_start = 266.666667   # 266°40'
+    us_cutoff = 276.666667  # 276°40'
+    ab_cutoff = 280.894444  # 280°53'40"
     sh_end = 293.333333    # 293°20'
     
     if lon < us_start:
@@ -196,7 +188,6 @@ def get_nakshatra_28_by_lon(lon: float) -> str:
             return NAKSHATRAS_28[min(idx + 1, 27)]
         return NAKSHATRAS_28[min(idx, 27)]
 
-
 # ── GEOMETRIC PATH RAY CASTING VECTOR ENGINE ─────────────────────────────────
 def get_cell_coord_by_nak(nak_name: str):
     for coord, (layer, text) in SBC_GRID_CELLS.items():
@@ -205,10 +196,6 @@ def get_cell_coord_by_nak(nak_name: str):
     return None
 
 def cast_sbc_vector_ray(r: int, c: int, direction_type: str) -> list:
-    """
-    Traces structural paths across the 9x9 matrix from a perimeter coordinate,
-    handling standard reflections on grid edges.
-    """
     if r == 0:  # Top Edge
         if direction_type == "front": dr, dc = 1, 0
         elif direction_type == "left": dr, dc = 1, -1
@@ -235,7 +222,6 @@ def cast_sbc_vector_ray(r: int, c: int, direction_type: str) -> list:
         curr_r += dr
         curr_c += dc
         
-        # Bouncing reflection mechanics
         if curr_r < 0:
             curr_r = -curr_r; dr = -dr
         elif curr_r > 8:
@@ -258,41 +244,91 @@ def cast_sbc_vector_ray(r: int, c: int, direction_type: str) -> list:
                 
     return pierced_cells
 
+# ── COMPREHENSIVE PANCHAKA PROPERTY EXTRACTORS ───────────────────────────────
+def derive_phonetic_components(symbol: str) -> tuple[str, str]:
+    """ Maps standard alphanumeric characters to classical grid-supported Sanskrit sounds. """
+    first_char = symbol.strip().upper()[0] if symbol else 'N'
+    
+    char_to_akshara = {
+        'A': 'अ', 'B': 'क', 'C': 'च', 'D': 'द', 'E': 'ए', 'F': 'ख', 'G': 'ग', 'H': 'घ',
+        'I': 'इ', 'J': 'ज', 'K': 'क', 'L': 'त', 'M': 'ङ', 'N': 'न', 'O': 'ओ', 'P': 'ध',
+        'Q': 'छ', 'R': 'झ', 'S': 'छ', 'T': 'त', 'U': 'ऊ', 'V': 'ञ', 'W': 'थ', 'X': 'ढ',
+        'Y': 'ञ', 'Z': 'झ'
+    }
+    
+    akshara = char_to_akshara.get(first_char, 'न')
+    
+    # Derives stock structural alignment Rashi map
+    char_to_rashi = {
+        'A': 'Mesha', 'B': 'Vrishabha', 'C': 'Mithuna', 'D': 'Karka', 'E': 'Simha', 
+        'F': 'Kanya', 'G': 'Tula', 'H': 'Vrishchika', 'I': 'Dhanu', 'J': 'Makara',
+        'K': 'Kumbha', 'L': 'Meena', 'M': 'Mesha', 'N': 'Vrishabha', 'O': 'Mithuna',
+        'P': 'Karka', 'Q': 'Simha', 'R': 'Kanya', 'S': 'Tula', 'T': 'Vrishchika',
+        'U': 'Dhanu', 'V': 'Makara', 'W': 'Kumbha', 'X': 'Meena', 'Y': 'Mesha', 'Z': 'Vrishabha'
+    }
+    return akshara, char_to_rashi.get(first_char, 'Mesha')
 
-# ── PHONETIC MAPPER FOR STOCK SIGNATURES ─────────────────────────────────────
 def derive_phonetic_stock_nak(symbol: str) -> str:
     phonetic_map = {
         'A': "Ashwini", 'B': "Bharani", 'K': "Krittika", 'R': "Rohini", 'M': "Mrigashirsha",
-        'A': "Ardra", 'P': "Punarvasu", 'P': "Pushya", 'A': "Ashlesha", 'M': "Magha",
-        'P': "Purva Phalguni", 'U': "Uttara Phalguni", 'H': "Hasta", 'C': "Chitra", 'S': "Swati",
-        'V': "Vishakha", 'A': "Anuradha", 'J': "Jyeshtha", 'M': "Mula", 'P': "Purvashadha",
-        'U': "Uttarashadha", 'A': "Abhijit", 'S': "Shravana", 'D': "Dhanishta", 'S': "Shatabhisha",
-        'P': "Purva Bhadrapada", 'U': "Uttara Bhadrapada", 'R': "Revati"
+        'F': "Ardra", 'P': "Punarvasu", 'Q': "Pushya", 'X': "Ashlesha", 'G': "Magha",
+        'E': "Purva Phalguni", 'U': "Uttara Phalguni", 'H': "Hasta", 'C': "Chitra", 'S': "Swati",
+        'V': "Vishakha", 'W': "Anuradha", 'J': "Jyeshtha", 'O': "Mula", 'Y': "Purvashadha",
+        'Z': "Uttarashadha", 'I': "Abhijit", 'L': "Shravana", 'D': "Dhanishta", 'T': "Shatabhisha",
+        'N': "Purva Bhadrapada", 'Fixed': "Uttara Bhadrapada", 'Index': "Revati"
     }
     first_char = symbol.strip().upper()[0] if symbol else 'N'
     return phonetic_map.get(first_char, "Rohini")
 
+def get_vara_string_by_date(dt: datetime) -> str:
+    """ Maps Python datetime weekdays precisely onto SBC Grid cell values. """
+    weekday_map = {
+        0: "☽ Mon", 1: "♂ Tue", 2: " बुध Wed", 3: " गुरु Thu", 4: " शुक्र Fri", 5: " शनि Sat", 6: "☉ Sun"
+    }
+    # Standardize names to match the manual grid configuration patterns exactly
+    day_idx = dt.weekday()
+    if day_idx == 0: return "☽ Mon"
+    elif day_idx == 1: return "♂ Tue"
+    elif day_idx == 6: return "☉ Sun"
+    return weekday_map.get(day_idx, "")
+
+def get_tithi_string_by_idx(tithi_raw: int) -> str:
+    if 1 <= tithi_raw <= 6: return "T1-6\nPratipada"
+    elif 7 <= tithi_raw <= 12: return "T7-12\nSaptami"
+    elif 13 <= tithi_raw <= 18: return "T13-18\nTrayodashi"
+    elif 19 <= tithi_raw <= 24: return "T19-24\nNavami"
+    else: return "T25-30\nPanchami"
 
 # ── MAIN ANALYSIS CORE FUNCTION ──────────────────────────────────────────────
 def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_method: str, manual_nak: str = None) -> SBCResult:
-    if not os.path.exists(ephe_path):
-        os.makedirs(ephe_path, exist_ok=True)
+    # SECURE ROUTING SYSTEM: Enforce validation to prevent silent falling back to low precision
+    if not os.path.isabs(ephe_path):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        ephe_path = os.path.join(base_dir, ephe_path)
+    
+    if not os.path.exists(ephe_path) or not any(f.endswith('.se1') for f in os.listdir(ephe_path)):
+        raise FileNotFoundError(
+            f"CRITICAL: Ephemeris path directory is missing or empty at: {ephe_path}. "
+            "SBC calculations require valid .se1 ephemeris assets."
+        )
         
     swe.set_ephe_path(ephe_path)
     
-    # 1. Determine focal stock Nakshatra signature
+    # 1. Determine focal stock Panchaka signatures
     if nak_method == "manual" and manual_nak:
         stock_nak = manual_nak
     elif nak_method == "listing_date":
-        stock_nak = "Swati"  # Base ephemeris fallback anchor for historical listing indexes
+        stock_nak = "Swati"
     else:
         stock_nak = derive_phonetic_stock_nak(symbol)
         
+    stock_akshara, stock_rashi = derive_phonetic_components(symbol)
+    today_vara = get_vara_string_by_date(dt)
+    
     # Find stock coordinate location inside our 2D grid matrix
     stock_coord = get_cell_coord_by_nak(stock_nak)
     st_r, st_c = stock_coord if stock_coord else (0, 2)
     
-    # Resolve directions originating from stock location
     f_ray = cast_sbc_vector_ray(st_r, st_c, "front")
     l_ray = cast_sbc_vector_ray(st_r, st_c, "left")
     r_ray = cast_sbc_vector_ray(st_r, st_c, "right")
@@ -316,7 +352,6 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
         speed = res[3]
         planet_positions[p_name] = {"lon": lon, "speed": speed}
         
-    # Extrapolate Ketu position counter-aligned to Rahu
     rahu_lon = planet_positions["Rahu"]["lon"]
     planet_positions["Ketu"] = {"lon": (rahu_lon + 180.0) % 360.0, "speed": planet_positions["Rahu"]["speed"]}
     
@@ -327,10 +362,10 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
     tithi_raw = int(diff / 12.0) + 1
     paksha = "Shukla" if tithi_raw <= 15 else "Krishna"
     
-    # Identify critical Krishna Malefic rule thresholds
+    target_tithi_str = get_tithi_string_by_idx(tithi_raw)
     moon_malefic_paksha = (paksha == "Krishna" and tithi_raw >= 23) or (paksha == "Shukla" and tithi_raw <= 5)
     
-    # 4. Step-by-step Ray Casting Aspect Vector Processing
+    # 4. Multi-Layer Collision Processing
     planet_results = []
     bullish_count = 0
     bearish_count = 0
@@ -338,11 +373,8 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
     for p_name, data in planet_positions.items():
         p_nak = get_nakshatra_28_by_lon(data["lon"])
         p_coord = get_cell_coord_by_nak(p_nak)
-        
-        # Determine speed vectors
         is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (p_name == "Moon" and moon_malefic_paksha)
         
-        # Calculate active ray directions based on speed profiles
         if p_name in ["Sun", "Moon", "Rahu", "Ketu"]:
             dirs = ["front", "left", "right"]
         else:
@@ -353,16 +385,24 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
             else:
                 dirs = ["front"]
                 
-        # Check if vector hits the target stock element
         hits_stock = False
         if p_coord:
             for d in dirs:
                 ray_cells = cast_sbc_vector_ray(p_coord[0], p_coord[1], d)
                 for rc in ray_cells:
+                    # Layer 1: Stellar Alignment
                     if rc["layer"] == "nak" and rc["text"].lower() == stock_nak.lower():
                         hits_stock = True
-                    # Check internal ring overlaps (Rashi matches)
-                    if rc["layer"] == "rashi" and sector.lower() in rc["text"].lower():
+                    # Layer 2: Phonetic Identity Alignment
+                    elif rc["layer"] == "vowel" and rc["text"] == stock_akshara:
+                        hits_stock = True
+                    # Layer 3: Rashi Alignment (FIXED BUG)
+                    elif rc["layer"] == "rashi" and stock_rashi.lower() in rc["text"].lower():
+                        hits_stock = True
+                    # Layer 4: Timing Window Intersections
+                    elif rc["layer"] == "tithi" and rc["text"] == target_tithi_str:
+                        hits_stock = True
+                    elif rc["layer"] == "vara" and today_vara and rc["text"] == today_vara:
                         hits_stock = True
                         
         score_contrib = 0.0
@@ -406,7 +446,6 @@ def analyse_symbol(symbol: str, sector: str, ephe_path: str, dt: datetime, nak_m
         {"type": "support", "price": cmp * 0.981, "label": "S2 Classical Panchaka Floor", "strength": "strong", "planets": ["Venus", "Moon"], "note": "Strong aspect ray convergence base floor."}
     ]
     
-    # Sector Commodity mapping definitions
     stock_commodities = ["Gold", "Silver", "Crude Oil"] if "Financial" in sector or "NIFTY" in symbol else ["Steel", "Base Metals", "Copper"]
     sector_matches = [c for c in stock_commodities if c in ["Gold", "Silver", "Steel", "Copper"]]
     
