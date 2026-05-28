@@ -5,7 +5,7 @@ import sys
 
 # ── Path setup — ensure local sbc_engine_fixed is imported ───────────────────
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sbc_engine_fixed import (
+from sbc_engine import (
     analyse_symbol, SBCResult, NAKSHATRAS, NAKSHATRAS_28,
     SBC_GRID_CELLS, NAK_SHORT, nak_index,
 )
