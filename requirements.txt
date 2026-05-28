@@ -12,7 +12,9 @@ pyswisseph>=2.10.3.1
 #   hashlib, math, dataclasses, datetime, typing  — no install needed
 # ─────────────────────────────────────────────────────────────
 
+# Streamlit web app framework
 streamlit
-pyswisseph
+
+# Market data & data processing
 yfinance
 pandas
