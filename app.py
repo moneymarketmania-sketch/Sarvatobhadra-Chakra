@@ -402,6 +402,29 @@ if analyse_btn and symbol:
             ist_now = dt + timedelta(hours=5, minutes=30)
             vara_today = ist_now.strftime("%A")
 
+            # 1. Build a dictionary mapping Nakshatras to their active transiting planets
+            transits_dict = {}
+            if hasattr(result, "planet_results") and result.planet_results:
+                for pr in result.planet_results:
+                    nak_name = pr.planet_nak
+                    p_label = pr.planet
+                    
+                    # Convert raw names to standard Vedic glyph formats for the perimeter view
+                    if p_label == "Sun": p_label = "☉ Sun"
+                    elif p_label == "Moon": p_label = "☽ Mon"
+                    elif p_label == "Mars": p_label = "♂ Tue"
+                    elif p_label == "Mercury": p_label = "☿ Wed"
+                    elif p_label == "Jupiter": p_label = "♃ Thu"
+                    elif p_label == "Venus": p_label = "♀ Fri"
+                    elif p_label == "Saturn": p_label = "♄ Sat"
+                    elif p_label == "Rahu": p_label = "Rahu"
+                    elif p_label == "Ketu": p_label = "Ketu"
+
+                    if nak_name not in transits_dict:
+                        transits_dict[nak_name] = []
+                    transits_dict[nak_name].append(p_label)
+
+            # 2. Render the grid passing the mapped transits into your updated layout function
             st.components.v1.html(
                 build_sbc_grid_html(
                     stock_nak=result.stock_nak,
@@ -412,6 +435,7 @@ if analyse_btn and symbol:
                     tithi=result.tithi,
                     paksha=result.paksha,
                     vara_today=vara_today,
+                    planetary_transits=transits_dict  # Safely passes the cleaned layout data
                 ),
                 height=760,
                 scrolling=False,
