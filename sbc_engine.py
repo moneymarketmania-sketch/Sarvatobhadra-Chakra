@@ -539,11 +539,11 @@ def analyse_symbol(
             dirs = ["front", "left", "right"]
         else:
             if data["is_retro"]:
-                dirs = ["Left"(Vaama)]
+                dirs = ["left"]    # Vaama
             elif data["is_atichari"]:
-                dirs = ["Right"(Dakshina)]
+                dirs = ["right"]   # Dakshina
             else:
-                dirs = ["Front"(Agra)]
+                dirs = ["front"]   # Agra
 
         p_nak = get_nakshatra_28_by_lon(data["lon"])
         p_coord = get_cell_coord_by_nak(p_nak)
