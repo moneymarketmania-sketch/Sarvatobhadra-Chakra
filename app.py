@@ -36,44 +36,30 @@ def build_sbc_grid_html(stock_nak, front_nak, left_nak, right_nak, moon_nak):
                 nak_i = nak_idx(text)
                 style = "width:68px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:4px;font-size:9px;position:relative;font-weight:600;"
                 if nak_i == s:
-                    style += (
-                        "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
-                    )
+                    style += "background:#EEEDFE;border:3px solid #534AB7;color:#3C3489;"
                 elif nak_i == f:
-                    style += (
-                        "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
-                    )
+                    style += "background:#E6F1FB;border:3px solid #378ADD;color:#185FA5;"
                 elif nak_i == l:
-                    style += (
-                        "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
-                    )
+                    style += "background:#EAF3DE;border:3px solid #639922;color:#3B6D11;"
                 elif nak_i == r:
-                    style += (
-                        "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
-                    )
+                    style += "background:#FAEEDA;border:3px solid #BA7517;color:#854F0B;"
                 else:
                     style += "background:#f8f8f8;color:#333;border:1px solid #ddd;"
-                moon_badge = (
-                    '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>'
-                    if nak_i == m and m != -1
-                    else ""
-                )
-                grid_cells.append(
-                    f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>'
-                )
+                moon_badge = '<div style="position:absolute;top:4px;right:4px;font-size:10px;">🌕</div>' if nak_i == m and m != -1 else ''
+                grid_cells.append(f'<div style="{style}"><span>{NAK_SHORT.get(nak_i, text)}</span>{moon_badge}</div>')
             else:
-                # Inner layers (Rashis, Tithis, Varas)
+                # Inner layers styling
                 if layer == "rashi":
                     style = "background:#E6F1FB;color:#185FA5;border:1px solid #378ADD;font-size:9px;"
                 elif layer == "tithi":
                     style = "background:#FAEEDA;color:#854F0B;border:1px solid #BA7517;font-size:9px;"
                 elif layer == "vara":
                     style = "background:#EAF3DE;color:#3B6D11;border:1px solid #639922;font-size:9px;"
+                elif layer == "center":
+                    style = "background:#FAECE7;color:#993C1D;font-weight:700;font-size:11px;"
                 else:
                     style = "background:#f0f0f0;color:#777;border:1px solid #ddd;font-size:9px;"
-                grid_cells.append(
-                    f'<div style="width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;{style}">{text}</div>'
-                )
+                grid_cells.append(f'<div style="width:68px;height:68px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:4px;{style}">{text}</div>')
 
     return f"""
     <div style="padding:20px;background:#f8f8f8;border:1px solid #ddd;border-radius:8px;text-align:center">
