@@ -42,9 +42,6 @@ def build_sbc_grid_html(
       • 3rd ring:   12 Rashis
       • Inner ring: Tithi groups + Varas
       • Centre:     SBC focal point
-    Highlights: Stock nak (purple), Front (blue), Left (green), Right (amber),
-                Moon nak (moon badge), Today's Tithi group (gold glow),
-                Today's Vara (highlighted).
     """
     if planetary_transits is None:
         planetary_transits = {}
@@ -351,21 +348,27 @@ if analyse_btn and symbol:
                 # ── SBC Grid ──────────────────────────────────────────────────
                 st.subheader("Sarvatobhadra Chakra — Full Classical 9×9 Grid")
 
-                moon_result = next(
-                    (pr for pr in result.planet_results if pr.planet == "Moon"), None
-                )
-                moon_nak = moon_result.planet_nak if moon_result else ""
+                moon_nak = ""
+                if hasattr(result, "planet_results") and result.planet_results:
+                    for pr in result.planet_results:
+                        p_name = getattr(pr, "planet", "")
+                        if p_name == "Moon":
+                            moon_nak = getattr(pr, "planet_nak", "")
+                            break
 
                 # Today's weekday in IST
                 ist_now = dt + timedelta(hours=5, minutes=30)
                 vara_today = ist_now.strftime("%A")
 
-                # Build a dictionary mapping Nakshatras to their active transiting planets
+                # Build a dictionary mapping Nakshatras to their active transiting planets safely
                 transits_dict = {}
                 if hasattr(result, "planet_results") and result.planet_results:
                     for pr in result.planet_results:
-                        nak_name = pr.planet_nak
-                        p_label = pr.planet
+                        nak_name = getattr(pr, "planet_nak", None)
+                        p_label = getattr(pr, "planet", None)
+
+                        if not nak_name or not p_label:
+                            continue
 
                         # Convert raw names to standard Vedic glyph formats for the perimeter view
                         if p_label == "Sun":
@@ -412,23 +415,31 @@ if analyse_btn and symbol:
                 st.subheader("🪐 Planet-by-Planet Vedha Analysis")
 
                 table_data = []
-                for pr in result.planet_results:
-                    # FIX: Map correctly to engine attributes 'is_vedha_hit' and 'score_contribution'
-                    hits_stock_str = (
-                        "🎯 YES" if getattr(pr, "is_vedha_hit", False) else "no"
-                    )
-                    score_contrib = getattr(pr, "score_contribution", 0.0)
+                if hasattr(result, "planet_results") and result.planet_results:
+                    for pr in result.planet_results:
+                        # SAFELY look up properties so it never crashes if names change
+                        p_name = getattr(pr, "planet", "Unknown")
+                        p_nak = getattr(pr, "planet_nak", "Unknown")
+                        p_speed = getattr(pr, "speed", 0.0)
+                        p_dirs = getattr(pr, "vedha_directions", [])
 
-                    table_data.append(
-                        {
-                            "Planet": pr.planet,
-                            "Current Nakshatra": pr.planet_nak,
-                            "Motion Speed": f"{pr.speed:.2f}°/d",
-                            "Vedha Directions": "+".join(pr.vedha_directions),
-                            "Hits Stock?": hits_stock_str,
-                            "SBC Weight": f"{score_contrib:+.1f}",
-                        }
-                    )
+                        is_hit = getattr(pr, "is_vedha_hit", False) or getattr(
+                            pr, "hits_stock", False
+                        )
+                        hits_stock_str = "🎯 YES" if is_hit else "no"
+
+                        score_contrib = getattr(pr, "score_contribution", 0.0)
+
+                        table_data.append(
+                            {
+                                "Planet": p_name,
+                                "Current Nakshatra": p_nak,
+                                "Motion Speed": f"{p_speed:.2f}°/d",
+                                "Vedha Directions": "+".join(p_dirs),
+                                "Hits Stock?": hits_stock_str,
+                                "SBC Weight": f"{score_contrib:+.1f}",
+                            }
+                        )
                 st.table(table_data)
 
             # ── Price Levels ──────────────────────────────────────────────────
