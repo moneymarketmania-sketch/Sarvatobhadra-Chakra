@@ -535,7 +535,6 @@ def analyse_symbol(
     all_front_hits = []
     all_left_hits = []
     all_right_hits = []
-    
 
     for p_name, data in planet_positions.items():
         # Dynamic Vedha Direction Selection (Rules-Based)
@@ -583,15 +582,15 @@ def analyse_symbol(
                 for rc in cast_sbc_vector_ray(p_coord[0], p_coord[1], d):
 
                     matched = (
-                       (
-                           rc["layer"] == "nak"
+                        (
+                            rc["layer"] == "nak"
                             and rc["text"].lower() == stock_nak.lower()
                         )
                         or (rc["layer"] == "vowel" and rc["text"] == stock_akshara)
                         or (
                             rc["layer"] == "rashi"
                             and stock_rashi.lower() in rc["text"].lower()
-                     )
+                        )
                         or (rc["layer"] == "tithi" and rc["text"] == target_tithi_str)
                         or (rc["layer"] == "vara" and rc["text"] == today_vara)
                     )
@@ -601,14 +600,17 @@ def analyse_symbol(
                         hits_stock = True
 
                         if d == "front":
+                            front_hits.append(rc["text"])
                             all_front_hits.append(rc["text"])
 
                         elif d == "left":
+                            left_hits.append(rc["text"])
                             all_left_hits.append(rc["text"])
 
                         elif d == "right":
+                            right_hits.append(rc["text"])
                             all_right_hits.append(rc["text"])
-            
+
                             hits_stock = True
 
         score_contrib = (
