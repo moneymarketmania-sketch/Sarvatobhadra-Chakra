@@ -566,7 +566,7 @@ def analyse_symbol(
 
             if angular_distance < 8.0:
                 is_weak = True
-        )  # Combustion check
+              # Combustion check
         multiplier = 0.5 if is_weak else 1.0
 
         # Ray Casting Hit Detection
