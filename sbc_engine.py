@@ -539,11 +539,11 @@ def analyse_symbol(
             dirs = ["front", "left", "right"]
         else:
             if data["is_retro"]:
-                dirs = ["left"]    # Vaama
+                dirs = ["left"]  # Vaama
             elif data["is_atichari"]:
-                dirs = ["right"]   # Dakshina
+                dirs = ["right"]  # Dakshina
             else:
-                dirs = ["front"]   # Agra
+                dirs = ["front"]  # Agra
 
         p_nak = get_nakshatra_28_by_lon(data["lon"])
         p_coord = get_cell_coord_by_nak(p_nak)
@@ -566,7 +566,7 @@ def analyse_symbol(
 
             if angular_distance < 8.0:
                 is_weak = True
-              # Combustion check
+            # Combustion check
         multiplier = 0.5 if is_weak else 1.0
 
         # Ray Casting Hit Detection
