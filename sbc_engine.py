@@ -714,7 +714,7 @@ def analyse_symbol(
     # Define Vedha variables (Assuming you want to track the primary Nakshatra hit)
     # If these are meant to be specific Nakshatra names, you must map them
     # from your ray-casting results or leave them as empty strings if not yet mapped.
-    v_front, v_left, v_right = "N/A", "N/A", "N/A"
+    v_front, v_left, v_right = "", "", ""
 
     # Ensure moon_malefic_paksha is defined in the outer scope
     # (It was defined inside the loop, so define it here for the return)
