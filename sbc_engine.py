@@ -532,6 +532,10 @@ def analyse_symbol(
     # 5. Multi-Layer Collision Engine
     planet_results = []
     bullish_count, bearish_count = 0, 0
+    all_front_hits = []
+    all_left_hits = []
+    all_right_hits = []
+    
 
     for p_name, data in planet_positions.items():
         # Dynamic Vedha Direction Selection (Rules-Based)
@@ -571,23 +575,41 @@ def analyse_symbol(
 
         # Ray Casting Hit Detection
         hits_stock = False
+        front_hits = []
+        left_hits = []
+        right_hits = []
         if p_coord:
             for d in dirs:
                 for rc in cast_sbc_vector_ray(p_coord[0], p_coord[1], d):
-                    if (
-                        (
-                            rc["layer"] == "nak"
+
+                    matched = (
+                       (
+                           rc["layer"] == "nak"
                             and rc["text"].lower() == stock_nak.lower()
                         )
                         or (rc["layer"] == "vowel" and rc["text"] == stock_akshara)
                         or (
                             rc["layer"] == "rashi"
                             and stock_rashi.lower() in rc["text"].lower()
-                        )
+                     )
                         or (rc["layer"] == "tithi" and rc["text"] == target_tithi_str)
                         or (rc["layer"] == "vara" and rc["text"] == today_vara)
-                    ):
+                    )
+
+                    if matched:
+
                         hits_stock = True
+
+                        if d == "front":
+                            all_front_hits.append(rc["text"])
+
+                        elif d == "left":
+                            all_left_hits.append(rc["text"])
+
+                        elif d == "right":
+                            all_right_hits.append(rc["text"])
+            
+                            hits_stock = True
 
         score_contrib = (
             (12.5 * multiplier)
@@ -714,7 +736,9 @@ def analyse_symbol(
     # Define Vedha variables (Assuming you want to track the primary Nakshatra hit)
     # If these are meant to be specific Nakshatra names, you must map them
     # from your ray-casting results or leave them as empty strings if not yet mapped.
-    v_front, v_left, v_right = "", "", ""
+    v_front = ", ".join(sorted(set(front_hits)))
+    v_left = ", ".join(sorted(set(left_hits)))
+    v_right = ", ".join(sorted(set(right_hits)))
 
     # Ensure moon_malefic_paksha is defined in the outer scope
     # (It was defined inside the loop, so define it here for the return)
