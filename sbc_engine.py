@@ -597,6 +597,7 @@ def analyse_symbol(
 
                     if matched:
 
+                        print("MATCH:", p_name, d, rc)
                         hits_stock = True
 
                         if d == "front":
