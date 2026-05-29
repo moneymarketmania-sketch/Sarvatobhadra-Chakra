@@ -555,8 +555,17 @@ def analyse_symbol(
         is_malefic = p_name in ["Sun", "Mars", "Saturn", "Rahu", "Ketu"] or (
             p_name == "Moon" and moon_malefic_paksha
         )
-        is_weak = (
-            abs(data["lon"] - planet_positions["Sun"]["lon"]) < 8.0
+        sun_lon = planet_positions["Sun"]["lon"]
+
+        is_weak = False
+
+        if p_name != "Sun":
+
+            diff = abs(data["lon"] - sun_lon)
+            angular_distance = min(diff % 360, 360 - diff % 360)
+
+            if angular_distance < 8.0:
+                is_weak = True
         )  # Combustion check
         multiplier = 0.5 if is_weak else 1.0
 
