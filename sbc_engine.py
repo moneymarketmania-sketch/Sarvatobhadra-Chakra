@@ -586,9 +586,10 @@ def analyse_symbol(
             else (-12.5 * multiplier if hits_stock else 0)
         )
         if hits_stock:
-            if is_malefic:
+            if nature == "malefic":
                 bullish_count += 1
-            else:
+
+            elif nature == "benefic":
                 bearish_count += 1
 
         planet_results.append(
